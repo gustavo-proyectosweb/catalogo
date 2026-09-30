@@ -1,0 +1,6 @@
+{
+  "name": "Barrio Burger - Catálogo Web + WhatsApp",
+  "description": "Catálogo web para comercios gastronómicos con pedido directo por WhatsApp y panel de administración en tiempo real.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
