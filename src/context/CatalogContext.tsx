@@ -2,6 +2,25 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BusinessInfo, Category, Product, CartItem, ExtraOption } from '../types';
 import { INITIAL_BUSINESS, INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '../data/initialData';
 
+import { db } from '../firebase/config';
+import { 
+  collection, 
+  doc, 
+  onSnapshot, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc,
+  setDoc 
+} from 'firebase/firestore';
+
+import { auth } from '../firebase/config';
+import { 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from 'firebase/auth';
+
+
 interface CatalogContextType {
   business: BusinessInfo;
   categories: Category[];
@@ -12,24 +31,24 @@ interface CatalogContextType {
   viewMode: 'public' | 'admin';
   setViewMode: (mode: 'public' | 'admin') => void;
   isAdminAuthenticated: boolean;
-  loginAdmin: (email: string, pass: string) => boolean;
-  logoutAdmin: () => void;
+  loginAdmin: (email: string, pass: string) => Promise<boolean>;
+  logoutAdmin: () => Promise<void>;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   selectedProductForDetail: Product | null;
   setSelectedProductForDetail: (product: Product | null) => void;
   // Product actions
-  addProduct: (product: Omit<Product, 'id'>) => Product;
-  updateProduct: (product: Product) => void;
-  deleteProduct: (id: string) => void;
-  toggleProductAvailability: (id: string) => void;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<Product>;
+  updateProduct: (product: Product) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  toggleProductAvailability: (id: string) => Promise<void>;
   // Category actions
-  addCategory: (category: Omit<Category, 'id'>) => void;
-  updateCategory: (category: Category) => void;
-  deleteCategory: (id: string) => void;
+  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  updateCategory: (category: Category) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   // Business actions
-  updateBusiness: (business: BusinessInfo) => void;
-  resetToDemoDefaults: () => void;
+  updateBusiness: (business: BusinessInfo) => Promise<void>;
+  resetToDemoDefaults: () => Promise<void>;
   // Cart actions
   addToCart: (product: Product, quantity: number, selectedExtras: ExtraOption[], notes?: string) => void;
   updateCartQuantity: (cartItemId: string, delta: number) => void;
@@ -43,32 +62,9 @@ const ADMIN_AUTH_KEY = 'barrio_burger_admin_auth';
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [business, setBusiness] = useState<BusinessInfo>(() => {
-    try {
-      const stored = localStorage.getItem(`${STORAGE_KEY}_business`);
-      return stored ? JSON.parse(stored) : INITIAL_BUSINESS;
-    } catch {
-      return INITIAL_BUSINESS;
-    }
-  });
-
-  const [categories, setCategories] = useState<Category[]>(() => {
-    try {
-      const stored = localStorage.getItem(`${STORAGE_KEY}_categories`);
-      return stored ? JSON.parse(stored) : INITIAL_CATEGORIES;
-    } catch {
-      return INITIAL_CATEGORIES;
-    }
-  });
-
-  const [products, setProducts] = useState<Product[]>(() => {
-    try {
-      const stored = localStorage.getItem(`${STORAGE_KEY}_products`);
-      return stored ? JSON.parse(stored) : INITIAL_PRODUCTS;
-    } catch {
-      return INITIAL_PRODUCTS;
-    }
-  });
+  const [business, setBusiness] = useState<BusinessInfo>(INITIAL_BUSINESS);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -80,38 +76,60 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const [viewMode, setViewMode] = useState<'public' | 'admin'>('public');
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem(ADMIN_AUTH_KEY) === 'true';
-  });
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProductForDetail, setSelectedProductForDetail] = useState<Product | null>(null);
 
-  // Sync to local storage
+  // 1. Escuchar la información del Negocio (Documento único 'main')
   useEffect(() => {
-    try {
-      localStorage.setItem(`${STORAGE_KEY}_business`, JSON.stringify(business));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [business]);
+    const unsub = onSnapshot(
+      doc(db, 'business', 'main'),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setBusiness(docSnap.data() as BusinessInfo);
+        }
+      },
+      (error) => console.error("Error al escuchar negocio:", error)
+    );
+    return () => unsub();
+  }, []);
 
+  // 2. Escuchar Categorías
   useEffect(() => {
-    try {
-      localStorage.setItem(`${STORAGE_KEY}_categories`, JSON.stringify(categories));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [categories]);
+    const unsub = onSnapshot(
+      collection(db, 'categories'),
+      (snapshot) => {
+        const cats = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Category[];
+        
+        // Opcional: ordenar por orden si tienen esa propiedad, o alfabéticamente
+        setCategories(cats);
+      },
+      (error) => console.error("Error al escuchar categorías:", error)
+    );
+    return () => unsub();
+  }, []);
 
+  // 3. Escuchar Productos
   useEffect(() => {
-    try {
-      localStorage.setItem(`${STORAGE_KEY}_products`, JSON.stringify(products));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [products]);
+    const unsub = onSnapshot(
+      collection(db, 'products'),
+      (snapshot) => {
+        const prods = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Product[];
+        setProducts(prods);
+      },
+      (error) => console.error("Error al escuchar productos:", error)
+    );
+    return () => unsub();
+  }, []);
 
+  // Guardar Carrito en localStorage
   useEffect(() => {
     try {
       localStorage.setItem(`${STORAGE_KEY}_cart`, JSON.stringify(cart));
@@ -120,82 +138,150 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [cart]);
 
-  // Admin authentication
-  const loginAdmin = (email: string, pass: string): boolean => {
-    // Clean demo credentials - accepts admin@barrioburger.com or any non-empty demo password
-    if (email.trim() && pass.trim()) {
-      setIsAdminAuthenticated(true);
-      localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+
+  // Listener en tiempo real del estado de autenticación en Firebase
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAdminAuthenticated(true);
+      } else {
+        setIsAdminAuthenticated(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Login real con Firebase Auth
+  const loginAdmin = async (email: string, pass: string): Promise<boolean> => {
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
       return true;
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+      return false;
     }
-    return false;
   };
 
-  const logoutAdmin = () => {
-    setIsAdminAuthenticated(false);
-    localStorage.removeItem(ADMIN_AUTH_KEY);
-    setViewMode('public');
+  // Logout real con Firebase Auth
+  const logoutAdmin = async () => {
+    try {
+      await signOut(auth);
+      setViewMode('public');
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
   };
 
-  // Products CRUD
-  const addProduct = (productData: Omit<Product, 'id'>): Product => {
-    const newProduct: Product = {
-      ...productData,
-      id: `prod-${Date.now()}`,
-    };
-    setProducts((prev) => [newProduct, ...prev]);
-    return newProduct;
+
+  // -------------------------------------------------------------
+  // OPERACIONES DE PRODUCTOS (FIRESTORE)
+  // -------------------------------------------------------------
+  const addProduct = async (productData: Omit<Product, 'id'>): Promise<Product> => {
+    try {
+      const docRef = await addDoc(collection(db, 'products'), productData);
+      return {
+        ...productData,
+        id: docRef.id,
+      };
+    } catch (error) {
+      console.error("Error al agregar producto:", error);
+      throw error;
+    }
   };
 
-  const updateProduct = (updated: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-    // Also if the product was open in detail, update it
-    setSelectedProductForDetail((current) => (current && current.id === updated.id ? updated : current));
+  const updateProduct = async (updated: Product) => {
+    try {
+      const { id, ...dataToUpdate } = updated;
+      const productRef = doc(db, 'products', id);
+      await updateDoc(productRef, dataToUpdate);
+
+      // Si el producto estaba abierto en el detalle, actualizamos el modal
+      setSelectedProductForDetail((current) => (current && current.id === updated.id ? updated : current));
+    } catch (error) {
+      console.error("Error al actualizar producto:", error);
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-    setCart((prev) => prev.filter((item) => item.product.id !== id));
+  const deleteProduct = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'products', id));
+      // Limpiamos del carrito local si existía ese producto
+      setCart((prev) => prev.filter((item) => item.product.id !== id));
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+    }
   };
 
-  const toggleProductAvailability = (id: string) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, available: !p.available } : p))
-    );
+  const toggleProductAvailability = async (id: string) => {
+    try {
+      const product = products.find((p) => p.id === id);
+      if (!product) return;
+
+      const productRef = doc(db, 'products', id);
+      await updateDoc(productRef, {
+        available: !product.available,
+      });
+    } catch (error) {
+      console.error("Error al cambiar disponibilidad:", error);
+    }
   };
 
-  // Categories CRUD
-  const addCategory = (categoryData: Omit<Category, 'id'>) => {
-    const newCat: Category = {
-      ...categoryData,
-      id: `cat-${Date.now()}`,
-    };
-    setCategories((prev) => [...prev, newCat]);
+  // -------------------------------------------------------------
+  // OPERACIONES DE CATEGORÍAS (FIRESTORE)
+  // -------------------------------------------------------------
+  const addCategory = async (categoryData: Omit<Category, 'id'>) => {
+    try {
+      await addDoc(collection(db, 'categories'), categoryData);
+    } catch (error) {
+      console.error("Error al agregar categoría:", error);
+    }
   };
 
-  const updateCategory = (updated: Category) => {
-    setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  const updateCategory = async (updated: Category) => {
+    try {
+      const { id, ...dataToUpdate } = updated;
+      const categoryRef = doc(db, 'categories', id);
+      await updateDoc(categoryRef, dataToUpdate);
+    } catch (error) {
+      console.error("Error al actualizar categoría:", error);
+    }
   };
 
-  const deleteCategory = (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
+  const deleteCategory = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'categories', id));
+    } catch (error) {
+      console.error("Error al eliminar categoría:", error);
+    }
   };
 
-  const updateBusiness = (updated: BusinessInfo) => {
-    setBusiness(updated);
+  // -------------------------------------------------------------
+  // OPERACIONES DEL NEGOCIO (FIRESTORE)
+  // -------------------------------------------------------------
+  const updateBusiness = async (updated: BusinessInfo) => {
+    try {
+      // Guardamos o actualizamos directamente el documento 'main' en la colección 'business'
+      const businessRef = doc(db, 'business', 'main');
+      await setDoc(businessRef, updated, { merge: true });
+    } catch (error) {
+      console.error("Error al actualizar la información del negocio:", error);
+    }
   };
 
-  const resetToDemoDefaults = () => {
-    setBusiness(INITIAL_BUSINESS);
-    setCategories(INITIAL_CATEGORIES);
-    setProducts(INITIAL_PRODUCTS);
-    setCart([]);
-    localStorage.removeItem(`${STORAGE_KEY}_business`);
-    localStorage.removeItem(`${STORAGE_KEY}_categories`);
-    localStorage.removeItem(`${STORAGE_KEY}_products`);
-    localStorage.removeItem(`${STORAGE_KEY}_cart`);
-  };
+  const resetToDemoDefaults = async () => {
+    try {
+      // 1. Restaurar negocio por defecto
+      await setDoc(doc(db, 'business', 'main'), INITIAL_BUSINESS);
 
+      // 2. Limpiar carrito local
+      setCart([]);
+      localStorage.removeItem(`${STORAGE_KEY}_cart`);
+
+      console.log("Datos de demostración restaurados");
+    } catch (error) {
+      console.error("Error al reiniciar a valores por defecto:", error);
+    }
+  };
   // Cart operations
   const addToCart = (product: Product, quantity: number, selectedExtras: ExtraOption[], notes?: string) => {
     // Calculate unit total
