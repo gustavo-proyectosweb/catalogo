@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ searchQuery, setSearchQuery }) =
       <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-20 relative z-10">
         <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 text-center sm:text-left">
           {/* Logo Avatar */}
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-1 bg-stone-900 border-2 border-amber-500/80 shadow-2xl overflow-hidden shrink-0">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-1 bg-stone-900 border-2 border-brand-primary/80 shadow-2xl overflow-hidden shrink-0">
             <img
               src={business.logoUrl}
               alt={`Logo de ${business.name}`}
@@ -84,11 +84,11 @@ export const Header: React.FC<HeaderProps> = ({ searchQuery, setSearchQuery }) =
         {/* Location & Schedule Pills */}
         <div className="mt-4 pt-3 border-t border-stone-800/80 flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-6 text-xs text-stone-400">
           <div className="flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-amber-500" />
+            <MapPin className="w-3.5 h-3.5 text-brand-primary" />
             <span>{business.address}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-amber-500" />
+            <Clock className="w-3.5 h-3.5 text-brand-primary" />
             <span>{business.schedule}</span>
           </div>
         </div>
@@ -101,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({ searchQuery, setSearchQuery }) =
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar hamburguesa, papas, bebida..."
-            className="w-full pl-10 pr-4 py-2.5 bg-stone-800/90 text-white placeholder-stone-400 text-sm rounded-xl border border-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+            className="w-full pl-10 pr-4 py-2.5 bg-stone-800/90 text-white placeholder-stone-400 text-sm rounded-xl border border-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-primary transition"
           />
           {searchQuery && (
             <button

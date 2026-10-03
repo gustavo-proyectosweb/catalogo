@@ -37,7 +37,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
               Agotado hoy
             </span>
           ) : product.badge ? (
-            <span className="px-2.5 py-1 rounded-lg bg-amber-500 text-stone-950 text-xs font-extrabold shadow-md tracking-tight">
+            <span className="px-2.5 py-1 rounded-lg bg-brand-primary text-stone-950 text-xs font-extrabold shadow-md tracking-tight">
               {product.badge}
             </span>
           ) : null}
@@ -46,7 +46,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
         {/* Extras indicator pill */}
         {product.available && hasExtras && (
           <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-stone-900/80 backdrop-blur-sm text-[11px] font-semibold text-stone-200">
-            <SlidersHorizontal className="w-3 h-3 text-amber-400" />
+            <SlidersHorizontal className="w-3 h-3 text-brand-primary" />
             Personalizable
           </span>
         )}
@@ -78,7 +78,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
           {product.available ? (
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-sm transition active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-bold text-xs sm:text-sm shadow-sm transition active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>{hasExtras ? 'Elegir' : 'Agregar'}</span>

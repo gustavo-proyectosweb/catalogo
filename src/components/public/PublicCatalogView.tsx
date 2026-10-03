@@ -135,7 +135,7 @@ export const PublicCatalogView: React.FC = () => {
                     setSearchQuery('');
                     setActiveCategoryId('all');
                   }}
-                  className="mt-4 px-4 py-2 bg-amber-500 text-stone-950 font-bold rounded-xl text-xs"
+                  className="mt-4 px-4 py-2 bg-brand-primary text-stone-950 font-bold rounded-xl text-xs"
                 >
                   Restablecer filtros
                 </button>

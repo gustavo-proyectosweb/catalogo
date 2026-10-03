@@ -26,7 +26,7 @@ const MainApp: React.FC = () => {
   }, [setViewMode]);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-stone-100 text-stone-900 selection:bg-amber-500 selection:text-white">
+    <div className="min-h-screen flex flex-col font-sans bg-stone-100 text-stone-900 selection:bg-brand-primary selection:text-white">
       {/* Demo Switcher Bar for pitches */}
       <DemoSwitcher />
 

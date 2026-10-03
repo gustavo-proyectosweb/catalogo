@@ -59,7 +59,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
 
         <button
           onClick={() => onOpenProductModal(null)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-bold text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           <span>Agregar producto</span>
@@ -75,7 +75,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre o ingrediente..."
-            className="w-full pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
         </div>
 
@@ -83,7 +83,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-800 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-primary"
           >
             <option value="all">Todas las categorías</option>
             {categories.map((c) => (

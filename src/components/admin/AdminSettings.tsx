@@ -93,7 +93,7 @@ export const AdminSettings: React.FC = () => {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
 
@@ -106,7 +106,7 @@ export const AdminSettings: React.FC = () => {
               required
               value={formData.tagline}
               onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
         </div>
@@ -120,7 +120,7 @@ export const AdminSettings: React.FC = () => {
             rows={2}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
         </div>
 
@@ -138,7 +138,7 @@ export const AdminSettings: React.FC = () => {
                 value={formData.whatsapp}
                 onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
                 placeholder="5491112345678"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary font-mono"
               />
             </div>
             <span className="text-[11px] text-stone-400 mt-1 block">
@@ -155,7 +155,7 @@ export const AdminSettings: React.FC = () => {
               value={formData.schedule}
               onChange={(e) => setFormData({ ...formData, schedule: e.target.value })}
               placeholder="Mar a Dom de 19:30 a 00:30 hs"
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ export const AdminSettings: React.FC = () => {
                 type="text"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
           </div>
@@ -188,7 +188,7 @@ export const AdminSettings: React.FC = () => {
                 value={formData.instagram}
                 onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                 placeholder="@barrioburger.ok"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
           </div>
@@ -204,7 +204,7 @@ export const AdminSettings: React.FC = () => {
             <div className="p-3 bg-stone-50 border border-stone-200 rounded-2xl flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-stone-200 overflow-hidden shrink-0 border border-stone-300 flex items-center justify-center">
                 {uploadingLogo ? (
-                  <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+                  <Loader2 className="w-5 h-5 text-brand-primary animate-spin" />
                 ) : (
                   <img
                     src={formData.logoUrl}
@@ -230,7 +230,7 @@ export const AdminSettings: React.FC = () => {
                   value={formData.logoUrl}
                   onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
                   placeholder="O pega la URL del logo"
-                  className="w-full px-2.5 py-1 bg-white border border-stone-300 rounded-md text-[11px] text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="w-full px-2.5 py-1 bg-white border border-stone-300 rounded-md text-[11px] text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-brand-primary"
                 />
               </div>
             </div>
@@ -244,7 +244,7 @@ export const AdminSettings: React.FC = () => {
             <div className="p-3 bg-stone-50 border border-stone-200 rounded-2xl flex items-center gap-3">
               <div className="w-16 h-12 rounded-xl bg-stone-200 overflow-hidden shrink-0 border border-stone-300 flex items-center justify-center">
                 {uploadingBanner ? (
-                  <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+                  <Loader2 className="w-5 h-5 text-brand-primary animate-spin" />
                 ) : (
                   <img
                     src={formData.bannerUrl}
@@ -270,7 +270,7 @@ export const AdminSettings: React.FC = () => {
                   value={formData.bannerUrl}
                   onChange={(e) => setFormData({ ...formData, bannerUrl: e.target.value })}
                   placeholder="O pega la URL de portada"
-                  className="w-full px-2.5 py-1 bg-white border border-stone-300 rounded-md text-[11px] text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="w-full px-2.5 py-1 bg-white border border-stone-300 rounded-md text-[11px] text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-brand-primary"
                 />
               </div>
             </div>
@@ -290,7 +290,7 @@ export const AdminSettings: React.FC = () => {
 
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-black text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center gap-2"
           >
             <Check className="w-4 h-4 stroke-[3]" />
             <span>GUARDAR CONFIGURACIÓN</span>

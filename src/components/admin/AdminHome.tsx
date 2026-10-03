@@ -29,7 +29,7 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
             <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white">
               Buenos días 👋
             </h1>
-            <p className="text-xl sm:text-2xl font-black text-amber-400 mt-0.5">
+            <p className="text-xl sm:text-2xl font-black text-brand-primary mt-0.5">
               {business.name}
             </p>
             <p className="text-stone-400 text-xs sm:text-sm mt-1 max-w-lg">
@@ -40,7 +40,7 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
           <div className="pt-2 flex flex-wrap items-center gap-3">
             <button
               onClick={() => setViewMode('public')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-bold text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer"
             >
               <Store className="w-4 h-4" />
               <span>Ver catálogo como cliente</span>
@@ -50,7 +50,7 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
               onClick={onOpenNewProduct}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs sm:text-sm border border-stone-700 transition active:scale-95 cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-amber-400" />
+              <Plus className="w-4 h-4 text-brand-primary" />
               <span>Agregar producto</span>
             </button>
           </div>

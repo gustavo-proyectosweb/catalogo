@@ -52,14 +52,14 @@ export const AdminLayout: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo and Brand */}
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-500 text-stone-950 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-lg bg-brand-primary text-stone-950 flex items-center justify-center font-bold">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="leading-tight">
                 <span className="font-heading font-black text-sm sm:text-base tracking-tight block">
                   {business.name}
                 </span>
-                <span className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider block">
+                <span className="text-[10px] text-brand-primary font-semibold uppercase tracking-wider block">
                   Panel de Control
                 </span>
               </div>
@@ -69,7 +69,7 @@ export const AdminLayout: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setViewMode('public')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
               >
                 <Store className="w-3.5 h-3.5" />
                 <span>Ver Catálogo</span>
@@ -91,7 +91,7 @@ export const AdminLayout: React.FC = () => {
               onClick={() => setActiveTab('home')}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 ${
                 activeTab === 'home'
-                  ? 'bg-stone-800 text-amber-400 border border-stone-700'
+                  ? 'bg-stone-800 text-brand-primary border border-stone-700'
                   : 'text-stone-400 hover:text-white'
               }`}
             >
@@ -103,7 +103,7 @@ export const AdminLayout: React.FC = () => {
               onClick={() => setActiveTab('products')}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 ${
                 activeTab === 'products'
-                  ? 'bg-stone-800 text-amber-400 border border-stone-700'
+                  ? 'bg-stone-800 text-brand-primary border border-stone-700'
                   : 'text-stone-400 hover:text-white'
               }`}
             >
@@ -115,7 +115,7 @@ export const AdminLayout: React.FC = () => {
               onClick={() => setActiveTab('categories')}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 ${
                 activeTab === 'categories'
-                  ? 'bg-stone-800 text-amber-400 border border-stone-700'
+                  ? 'bg-stone-800 text-brand-primary border border-stone-700'
                   : 'text-stone-400 hover:text-white'
               }`}
             >
@@ -127,7 +127,7 @@ export const AdminLayout: React.FC = () => {
               onClick={() => setActiveTab('settings')}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 ${
                 activeTab === 'settings'
-                  ? 'bg-stone-800 text-amber-400 border border-stone-700'
+                  ? 'bg-stone-800 text-brand-primary border border-stone-700'
                   : 'text-stone-400 hover:text-white'
               }`}
             >

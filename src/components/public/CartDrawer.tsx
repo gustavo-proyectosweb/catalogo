@@ -82,7 +82,7 @@ export const CartDrawer: React.FC = () => {
         {/* Header */}
         <div className="p-4 sm:p-5 bg-stone-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500 text-stone-950 flex items-center justify-center font-black">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary text-stone-950 flex items-center justify-center font-black">
               {cartCount}
             </div>
             <div>
@@ -127,7 +127,7 @@ export const CartDrawer: React.FC = () => {
               </p>
               <button
                 onClick={() => setIsCartOpen(false)}
-                className="mt-4 px-4 py-2 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs shadow-sm hover:bg-amber-400 transition"
+                className="mt-4 px-4 py-2 rounded-xl bg-brand-primary text-stone-950 font-bold text-xs shadow-sm hover:bg-brand-primary transition"
               >
                 Explorar Catálogo
               </button>
@@ -157,7 +157,7 @@ export const CartDrawer: React.FC = () => {
                                 key={extra.id}
                                 className="text-[11px] text-stone-600 flex items-center gap-1 font-medium"
                               >
-                                <span className="text-amber-500 font-bold">+</span>
+                                <span className="text-brand-primary font-bold">+</span>
                                 <span>{extra.name}</span>
                                 <span className="text-stone-400">({formatPrice(extra.price)})</span>
                               </div>
@@ -225,7 +225,7 @@ export const CartDrawer: React.FC = () => {
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="Tu nombre (ej: Carlos)"
-                    className="w-full pl-9 pr-3 py-2 bg-white rounded-xl border border-stone-200 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full pl-9 pr-3 py-2 bg-white rounded-xl border border-stone-200 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-brand-primary"
                   />
                 </div>
 
@@ -236,7 +236,7 @@ export const CartDrawer: React.FC = () => {
                     onClick={() => setDeliveryType('delivery')}
                     className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${
                       deliveryType === 'delivery'
-                        ? 'bg-amber-500 border-amber-500 text-stone-950 shadow-xs'
+                        ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-xs'
                         : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
                     }`}
                   >
@@ -247,7 +247,7 @@ export const CartDrawer: React.FC = () => {
                     onClick={() => setDeliveryType('takeaway')}
                     className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${
                       deliveryType === 'takeaway'
-                        ? 'bg-amber-500 border-amber-500 text-stone-950 shadow-xs'
+                        ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-xs'
                         : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
                     }`}
                   >
@@ -267,7 +267,7 @@ export const CartDrawer: React.FC = () => {
                         ? 'Dirección de entrega (calle, número, piso/depto)'
                         : 'Aclaración para el retiro (ej: paso 21:30)'
                     }
-                    className="w-full pl-9 pr-3 py-2 bg-white rounded-xl border border-stone-200 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-500 resize-none"
+                    className="w-full pl-9 pr-3 py-2 bg-white rounded-xl border border-stone-200 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-brand-primary resize-none"
                   />
                 </div>
               </div>

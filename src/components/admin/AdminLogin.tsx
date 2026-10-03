@@ -35,13 +35,13 @@ export const AdminLogin: React.FC = () => {
           onClick={() => setViewMode('public')}
           className="inline-flex items-center gap-2 text-xs font-semibold text-stone-400 hover:text-white transition bg-stone-800/80 px-3 py-1.5 rounded-lg border border-stone-700 cursor-pointer"
         >
-          <Store className="w-4 h-4 text-amber-500" />
+          <Store className="w-4 h-4 text-brand-primary" />
           <span>Volver al Catálogo Público</span>
         </button>
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500 text-stone-950 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/20 mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-brand-primary text-stone-950 flex items-center justify-center mx-auto shadow-xl shadow-brand-primary/50/20 mb-4">
           <ShieldCheck className="w-9 h-9" />
         </div>
 
@@ -49,7 +49,7 @@ export const AdminLogin: React.FC = () => {
           Panel de Control
         </h2>
         <p className="mt-1 text-sm text-stone-400">
-          Administración de catálogo de <span className="text-amber-400 font-bold">{business.name}</span>
+          Administración de catálogo de <span className="text-brand-primary font-bold">{business.name}</span>
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export const AdminLogin: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 bg-stone-900 border border-stone-800 rounded-xl text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full pl-10 pr-3 py-2.5 bg-stone-900 border border-stone-800 rounded-xl text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   placeholder="admin@barrioburger.com"
                   disabled={loading}
                 />
@@ -89,7 +89,7 @@ export const AdminLogin: React.FC = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 bg-stone-900 border border-stone-800 rounded-xl text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full pl-10 pr-3 py-2.5 bg-stone-900 border border-stone-800 rounded-xl text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   placeholder="••••••••"
                   disabled={loading}
                 />
@@ -99,7 +99,7 @@ export const AdminLogin: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-sm shadow-lg shadow-amber-500/20 transition cursor-pointer disabled:opacity-50"
+              className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-black text-sm shadow-lg shadow-brand-primary/50/20 transition cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

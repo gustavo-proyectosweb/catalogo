@@ -20,22 +20,22 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({
   const getIcon = (id: string) => {
     switch (id) {
       case 'cat-hamburguesas':
-        return <Flame className="w-4 h-4 text-amber-500" />;
+        return <Flame className="w-4 h-4 text-brand-primary" />;
       case 'cat-combos':
-        return <Utensils className="w-4 h-4 text-amber-500" />;
+        return <Utensils className="w-4 h-4 text-brand-primary" />;
       case 'cat-acompaniamientos':
-        return <Cookie className="w-4 h-4 text-amber-500" />;
+        return <Cookie className="w-4 h-4 text-brand-primary" />;
       case 'cat-bebidas':
-        return <CupSoda className="w-4 h-4 text-amber-500" />;
+        return <CupSoda className="w-4 h-4 text-brand-primary" />;
       default:
-        return <LayoutGrid className="w-4 h-4 text-amber-500" />;
+        return <LayoutGrid className="w-4 h-4 text-brand-primary" />;
     }
   };
 
   const activeCategories = categories.filter((c) => c.active);
 
   return (
-    <nav className="sticky top-[38px] z-40 bg-stone-900/95 backdrop-blur-md border-b border-stone-800 shadow-md py-2.5 px-4">
+    <nav className="sticky top-[33px] z-40 bg-stone-900/95 backdrop-blur-md border-b border-stone-800 shadow-md py-2.5 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
           {/* 'Todos' option */}
@@ -43,7 +43,7 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({
             onClick={() => onSelectCategory('all')}
             className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeCategoryId === 'all'
-                ? 'bg-amber-500 text-stone-950 shadow-md shadow-amber-500/20 scale-102'
+                ? 'bg-brand-primary text-stone-950 shadow-md shadow-brand-primary/50/20 scale-102'
                 : 'bg-stone-800/90 text-stone-300 hover:text-white hover:bg-stone-700/80 border border-stone-700/60'
             }`}
           >
@@ -71,7 +71,7 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({
                 onClick={() => onSelectCategory(cat.id)}
                 className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-amber-500 text-stone-950 shadow-md shadow-amber-500/20 scale-102'
+                    ? 'bg-brand-primary text-stone-950 shadow-md shadow-brand-primary/50/20 scale-102'
                     : 'bg-stone-800/90 text-stone-300 hover:text-white hover:bg-stone-700/80 border border-stone-700/60'
                 }`}
               >

@@ -72,7 +72,7 @@ export const AdminCategories: React.FC = () => {
         {!isAdding && (
           <button
             onClick={() => setIsAdding(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-bold text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Nueva categoría</span>
@@ -94,7 +94,7 @@ export const AdminCategories: React.FC = () => {
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
               placeholder="Nombre de la nueva categoría (ej: Postres)"
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
 
@@ -108,7 +108,7 @@ export const AdminCategories: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-xl text-xs shadow-sm cursor-pointer"
+              className="px-4 py-2.5 bg-brand-primary hover:bg-brand-primary text-stone-950 font-bold rounded-xl text-xs shadow-sm cursor-pointer"
             >
               Guardar categoría
             </button>

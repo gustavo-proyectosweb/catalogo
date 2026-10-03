@@ -75,7 +75,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </button>
 
           {product.badge && (
-            <span className="absolute top-3.5 left-3.5 px-3 py-1 rounded-lg bg-amber-500 text-stone-950 text-xs font-black shadow-md">
+            <span className="absolute top-3.5 left-3.5 px-3 py-1 rounded-lg bg-brand-primary text-stone-950 text-xs font-black shadow-md">
               {product.badge}
             </span>
           )}
@@ -104,7 +104,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="space-y-3 pt-4 border-t border-stone-100">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <Sparkles className="w-3.5 h-3.5 text-brand-primary" />
                   Extras & Personalización
                 </h3>
                 <span className="text-[11px] text-stone-400 font-medium">Opcional</span>
@@ -119,7 +119,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       onClick={() => toggleExtra(extra)}
                       className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer select-none ${
                         isChecked
-                          ? 'border-amber-500 bg-amber-50/70 text-stone-900'
+                          ? 'border-brand-primary bg-amber-50/70 text-stone-900'
                           : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
                       }`}
                     >
@@ -127,7 +127,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         <div
                           className={`w-5 h-5 rounded-md flex items-center justify-center border transition ${
                             isChecked
-                              ? 'bg-amber-500 border-amber-500 text-stone-950 font-bold'
+                              ? 'bg-brand-primary border-brand-primary text-stone-950 font-bold'
                               : 'border-stone-300 bg-white'
                           }`}
                         >
@@ -157,7 +157,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ej: Sin cebolla, aderezo aparte, etc."
               maxLength={120}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
         </div>
@@ -189,7 +189,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* Add to Cart Button */}
           <button
             onClick={handleAdd}
-            className="flex-1 flex items-center justify-between px-5 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-stone-950 font-black text-sm sm:text-base shadow-lg shadow-amber-500/20 transition cursor-pointer"
+            className="flex-1 flex items-center justify-between px-5 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary active:scale-[0.99] text-stone-950 font-black text-sm sm:text-base shadow-lg shadow-brand-primary/50/20 transition cursor-pointer"
           >
             <span className="flex items-center gap-2">
               <ShoppingBag className="w-5 h-5" />

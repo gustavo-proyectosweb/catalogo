@@ -181,7 +181,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ej: Doble Bacon"
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
 
@@ -192,7 +192,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -220,7 +220,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   step="50"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  className="w-full pl-8 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 font-bold text-base focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full pl-8 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 font-bold text-base focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 />
               </div>
             </div>
@@ -234,7 +234,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 value={badge}
                 onChange={(e) => setBadge(e.target.value)}
                 placeholder="Ej: MÁS PEDIDA 🔥, NUEVO"
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
           </div>
@@ -249,7 +249,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Pan brioche, doble carne, cheddar fundido..."
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
 
@@ -289,7 +289,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-3 bg-stone-50 rounded-2xl border border-stone-200">
               <div className="w-16 h-16 rounded-xl overflow-hidden bg-stone-200 shrink-0 border border-stone-300 relative flex items-center justify-center">
                 {uploading ? (
-                  <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
+                  <Loader2 className="w-6 h-6 text-brand-primary animate-spin" />
                 ) : (
                   <img
                     src={imageUrl || PRESET_IMAGES[0].url}
@@ -324,7 +324,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
                     placeholder="https://images.unsplash.com/..."
-                    className="w-full mt-0.5 px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full mt-0.5 px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-brand-primary"
                   />
                 </div>
               </div>
@@ -343,7 +343,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     onClick={() => setImageUrl(preset.url)}
                     className={`shrink-0 flex items-center gap-1.5 p-1 rounded-xl border text-xs transition cursor-pointer ${
                       imageUrl === preset.url
-                        ? 'border-amber-500 bg-amber-50 text-stone-900 font-bold'
+                        ? 'border-brand-primary bg-amber-50 text-stone-900 font-bold'
                         : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
                     }`}
                   >
@@ -439,7 +439,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           <button
             type="button"
             onClick={handleSubmit}
-            className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-black text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center gap-2"
           >
             <Check className="w-4 h-4 stroke-[3]" />
             <span>{isEditing ? 'GUARDAR CAMBIOS' : 'CREAR PRODUCTO'}</span>
