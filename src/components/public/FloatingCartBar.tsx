@@ -12,7 +12,7 @@ export const FloatingCartBar: React.FC = () => {
     <div className="fixed bottom-4 inset-x-0 z-40 px-4 max-w-md mx-auto pointer-events-none animate-in slide-in-from-bottom duration-300">
       <button
         onClick={() => setIsCartOpen(true)}
-        className="pointer-events-auto w-full flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-black shadow-2xl shadow-brand-primary/50/30 border border-amber-300/40 transition active:scale-[0.98] cursor-pointer group"
+        className="pointer-events-auto w-full flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-black shadow-2xl shadow-brand-primary/50/30 border border-brand-primary/30/40 transition active:scale-[0.98] cursor-pointer group"
       >
         <div className="flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-xl bg-stone-950 text-white flex items-center justify-center shadow-md">

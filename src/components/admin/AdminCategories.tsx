@@ -84,7 +84,7 @@ export const AdminCategories: React.FC = () => {
       {isAdding && (
         <form
           onSubmit={handleCreate}
-          className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-center gap-3 animate-in fade-in"
+          className="p-4 bg-brand-primary/5 border border-brand-primary/20 rounded-2xl flex flex-col sm:flex-row items-center gap-3 animate-in fade-in"
         >
           <div className="flex-1 w-full">
             <input
@@ -124,7 +124,7 @@ export const AdminCategories: React.FC = () => {
           return (
             <div
               key={cat.id}
-              className="bg-white rounded-2xl border border-stone-200 p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-xs hover:border-amber-300 transition"
+              className="bg-white rounded-2xl border border-stone-200 p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-xs hover:border-brand-primary/50 transition"
             >
               {isEditingThis ? (
                 <div className="flex-1 flex items-center gap-2">

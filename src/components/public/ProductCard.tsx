@@ -56,7 +56,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
       <div className="p-4 flex flex-col flex-1 justify-between">
         <div>
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-heading font-bold text-lg text-stone-900 group-hover:text-amber-600 transition leading-snug">
+            <h3 className="font-heading font-bold text-lg text-stone-900 group-hover:text-brand-primary transition leading-snug">
               {product.name}
             </h3>
           </div>

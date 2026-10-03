@@ -167,7 +167,7 @@ export const CartDrawer: React.FC = () => {
 
                         {/* Customer note on product */}
                         {item.notes && (
-                          <p className="mt-1 text-[11px] text-amber-700 italic bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 inline-block">
+                          <p className="mt-1 text-[11px] text-brand-primary italic bg-brand-primary/5 px-2 py-0.5 rounded border border-brand-primary/20/60 inline-block">
                             Nota: {item.notes}
                           </p>
                         )}

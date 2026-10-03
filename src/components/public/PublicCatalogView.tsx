@@ -82,7 +82,7 @@ export const PublicCatalogView: React.FC = () => {
             </h2>
             <button
               onClick={() => setSearchQuery('')}
-              className="text-xs font-semibold text-amber-600 hover:underline"
+              className="text-xs font-semibold text-brand-primary hover:underline"
             >
               Ver todo el menú
             </button>

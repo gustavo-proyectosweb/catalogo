@@ -313,7 +313,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                       className="hidden"
                     />
                   </label>
-                  {uploading && <span className="text-xs text-amber-600 font-semibold">Procesando imagen...</span>}
+                  {uploading && <span className="text-xs text-brand-primary font-semibold">Procesando imagen...</span>}
                 </div>
 
                 {/* Input para pegar URL manual */}
@@ -343,7 +343,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     onClick={() => setImageUrl(preset.url)}
                     className={`shrink-0 flex items-center gap-1.5 p-1 rounded-xl border text-xs transition cursor-pointer ${
                       imageUrl === preset.url
-                        ? 'border-brand-primary bg-amber-50 text-stone-900 font-bold'
+                        ? 'border-brand-primary bg-brand-primary/5 text-stone-900 font-bold'
                         : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
                     }`}
                   >

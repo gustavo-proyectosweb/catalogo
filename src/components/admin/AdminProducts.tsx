@@ -111,7 +111,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
             return (
               <div
                 key={product.id}
-                className="bg-white rounded-2xl border border-stone-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-amber-400/60 transition"
+                className="bg-white rounded-2xl border border-stone-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-brand-primary/40/60 transition"
               >
                 {/* Photo & Info */}
                 <div className="flex items-center gap-3.5 min-w-0">
@@ -134,7 +134,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
                         {product.name}
                       </h4>
                       {product.badge && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-900 shrink-0">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-brand-primary/10 text-brand-primary shrink-0">
                           {product.badge}
                         </span>
                       )}

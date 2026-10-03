@@ -82,7 +82,7 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
             </span>
           </div>
 
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 group-hover:bg-amber-100 text-amber-600 flex items-center justify-center transition">
+          <div className="w-12 h-12 rounded-2xl bg-brand-primary/5 group-hover:bg-brand-primary/10 text-brand-primary flex items-center justify-center transition">
             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
@@ -111,19 +111,19 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
       </div>
 
       {/* Demo helper tip box */}
-      <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200/70 text-xs text-amber-900">
-        <div className="flex items-start gap-2.5">
-          <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold text-amber-950">
-              Prueba sugerida para el dueño del local:
-            </p>
-            <p className="mt-0.5 text-amber-800 leading-relaxed">
-              Andá a la pestaña <strong>"Productos"</strong>, hacé clic en <strong>"Editar"</strong> en la hamburguesa <em>Doble Bacon</em>, aumentale el precio a <strong>$13.500</strong> y guardá. Después tocá <strong>"Ver catálogo"</strong> y mostrale que el cambio impactó en tiempo real.
-            </p>
-          </div>
-        </div>
-      </div>
+      <div className="p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/30 text-xs text-stone-800 shadow-sm">
+  <div className="flex items-start gap-2.5">
+    <Sparkles className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+    <div>
+      <p className="font-bold text-stone-900">
+        Prueba sugerida para el dueño del local:
+      </p>
+      <p className="mt-0.5 text-stone-700 leading-relaxed">
+        Andá a la pestaña <strong className="text-brand-primary font-bold">"Productos"</strong>, hacé clic en <strong className="text-brand-primary font-bold">"Editar"</strong> en la hamburguesa <em>Doble Bacon</em>, aumentale el precio a <strong className="text-brand-primary font-bold">$13.500</strong> y guardá. Después tocá <strong className="text-brand-primary font-bold">"Ver catálogo"</strong> y mostrale que el cambio impactó en tiempo real.
+      </p>
+    </div>
+  </div>
+</div>
     </div>
   );
 };

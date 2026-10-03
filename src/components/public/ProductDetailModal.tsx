@@ -119,7 +119,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       onClick={() => toggleExtra(extra)}
                       className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer select-none ${
                         isChecked
-                          ? 'border-brand-primary bg-amber-50/70 text-stone-900'
+                          ? 'border-brand-primary bg-brand-primary/5/70 text-stone-900'
                           : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700'
                       }`}
                     >
