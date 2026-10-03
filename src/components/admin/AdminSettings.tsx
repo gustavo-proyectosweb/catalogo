@@ -300,7 +300,3 @@ export const AdminSettings: React.FC = () => {
     </div>
   );
 };
-
-// https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&auto=format&fit=crop&q=80
-
-// https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=1200&auto=format&fit=crop&q=80
