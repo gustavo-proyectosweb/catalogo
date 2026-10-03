@@ -105,8 +105,10 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
           ...doc.data(),
         })) as Category[];
         
-        // Opcional: ordenar por orden si tienen esa propiedad, o alfabéticamente
-        setCategories(cats);
+        // Ordenamos numéricamente según la propiedad 'order'
+      const sortedCats = cats.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+      setCategories(sortedCats);
       },
       (error) => console.error("Error al escuchar categorías:", error)
     );
@@ -230,12 +232,24 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // OPERACIONES DE CATEGORÍAS (FIRESTORE)
   // -------------------------------------------------------------
   const addCategory = async (categoryData: Omit<Category, 'id'>) => {
-    try {
-      await addDoc(collection(db, 'categories'), categoryData);
-    } catch (error) {
-      console.error("Error al agregar categoría:", error);
-    }
-  };
+  try {
+    // Calculamos el próximo número de orden disponible
+    const nextOrder = categories.length > 0 
+      ? Math.max(...categories.map((c) => c.order ?? 0)) + 1 
+      : 0;
+
+    // Si categoryData no trae un order definido, le asignamos nextOrder
+    const finalData = {
+      ...categoryData,
+      order: categoryData.order ?? nextOrder,
+      active: categoryData.active ?? true,
+    };
+
+    await addDoc(collection(db, 'categories'), finalData);
+  } catch (error) {
+    console.error("Error al agregar categoría:", error);
+  }
+};
 
   const updateCategory = async (updated: Category) => {
     try {

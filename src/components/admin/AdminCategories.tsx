@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCatalog } from '../../context/CatalogContext';
 import { Category } from '../../types';
 import { Plus, Edit2, Trash2, Check, X, GripVertical, Flame } from 'lucide-react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 export const AdminCategories: React.FC = () => {
   const { categories, addCategory, updateCategory, deleteCategory } = useCatalog();
@@ -39,6 +40,24 @@ export const AdminCategories: React.FC = () => {
     });
     setEditingCategoryId(null);
   };
+
+  const handleMoveCategory = async (index: number, direction: 'up' | 'down') => {
+  const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+  // Verificamos límites
+  if (targetIndex < 0 || targetIndex >= categories.length) return;
+
+  const currentCat = categories[index];
+  const targetCat = categories[targetIndex];
+
+  // Intercambiamos sus números de 'order'
+  try {
+    await updateCategory({ ...currentCat, order: targetCat.order ?? targetIndex });
+    await updateCategory({ ...targetCat, order: currentCat.order ?? index });
+  } catch (error) {
+    console.error("Error al reordenar categorías:", error);
+  }
+};
 
   const handleToggleActive = (cat: Category) => {
     updateCategory({
@@ -162,6 +181,25 @@ export const AdminCategories: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {/* Botón Subir */}
+  <button
+    onClick={() => handleMoveCategory(index, 'up')}
+    disabled={index === 0}
+    className="p-1.5 text-stone-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
+    title="Mover arriba"
+  >
+    <ArrowUp className="w-4 h-4" />
+  </button>
+
+  {/* Botón Bajar */}
+  <button
+    onClick={() => handleMoveCategory(index, 'down')}
+    disabled={index === categories.length - 1}
+    className="p-1.5 text-stone-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
+    title="Mover abajo"
+  >
+    <ArrowDown className="w-4 h-4" />
+  </button>
                     {/* Active toggle */}
                     <button
                       onClick={() => handleToggleActive(cat)}
