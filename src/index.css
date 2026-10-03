@@ -25,6 +25,8 @@
   scrollbar-width: none;
 }
 
-.nl-badge {
+[data-netlify-deploy-preview-inject],
+#netlify-modal-root,
+iframe[src*="netlify"] {
   display: none !important;
 }
