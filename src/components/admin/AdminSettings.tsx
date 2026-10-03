@@ -1,13 +1,48 @@
 import React, { useState } from 'react';
 import { useCatalog } from '../../context/CatalogContext';
 import { BusinessInfo } from '../../types';
-import { Check, RotateCcw, Building, Phone, MapPin, Instagram, Sparkles } from 'lucide-react';
+import { Check, RotateCcw, Phone, MapPin, Instagram, Upload, Loader2 } from 'lucide-react';
+import { uploadImageToCloudinary } from '../../services/cloudinary';
 
 export const AdminSettings: React.FC = () => {
   const { business, updateBusiness, resetToDemoDefaults } = useCatalog();
 
   const [formData, setFormData] = useState<BusinessInfo>(business);
   const [savedNotification, setSavedNotification] = useState(false);
+
+  // Estados de carga independientes para Logo y Banner
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingLogo(true);
+      const url = await uploadImageToCloudinary(file);
+      setFormData((prev) => ({ ...prev, logoUrl: url }));
+    } catch (error) {
+      alert('Error al subir el logo. Por favor intenta de nuevo.');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingBanner(true);
+      const url = await uploadImageToCloudinary(file);
+      setFormData((prev) => ({ ...prev, bannerUrl: url }));
+    } catch (error) {
+      alert('Error al subir la imagen de portada. Por favor intenta de nuevo.');
+    } finally {
+      setUploadingBanner(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,30 +194,86 @@ export const AdminSettings: React.FC = () => {
           </div>
         </div>
 
-        {/* Logo and Banner URLs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-stone-700 mb-1">
-              URL del Logo
+        {/* Logo and Banner Uploads */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-stone-100">
+          {/* Logo Field */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-stone-700">
+              Logo del negocio
             </label>
-            <input
-              type="text"
-              value={formData.logoUrl}
-              onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs truncate focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
+            <div className="p-3 bg-stone-50 border border-stone-200 rounded-2xl flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-stone-200 overflow-hidden shrink-0 border border-stone-300 flex items-center justify-center">
+                {uploadingLogo ? (
+                  <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+                ) : (
+                  <img
+                    src={formData.logoUrl}
+                    alt="Logo"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-bold transition">
+                  <Upload className="w-3 h-3" />
+                  <span>{uploadingLogo ? 'Subiendo...' : 'Subir logo'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    disabled={uploadingLogo}
+                    className="hidden"
+                  />
+                </label>
+                <input
+                  type="text"
+                  value={formData.logoUrl}
+                  onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+                  placeholder="O pega la URL del logo"
+                  className="w-full px-2.5 py-1 bg-white border border-stone-300 rounded-md text-[11px] text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-stone-700 mb-1">
-              URL de la Portada / Banner
+          {/* Banner Field */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-stone-700">
+              Portada / Banner
             </label>
-            <input
-              type="text"
-              value={formData.bannerUrl}
-              onChange={(e) => setFormData({ ...formData, bannerUrl: e.target.value })}
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs truncate focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
+            <div className="p-3 bg-stone-50 border border-stone-200 rounded-2xl flex items-center gap-3">
+              <div className="w-16 h-12 rounded-xl bg-stone-200 overflow-hidden shrink-0 border border-stone-300 flex items-center justify-center">
+                {uploadingBanner ? (
+                  <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+                ) : (
+                  <img
+                    src={formData.bannerUrl}
+                    alt="Banner"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-bold transition">
+                  <Upload className="w-3 h-3" />
+                  <span>{uploadingBanner ? 'Subiendo...' : 'Subir banner'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerUpload}
+                    disabled={uploadingBanner}
+                    className="hidden"
+                  />
+                </label>
+                <input
+                  type="text"
+                  value={formData.bannerUrl}
+                  onChange={(e) => setFormData({ ...formData, bannerUrl: e.target.value })}
+                  placeholder="O pega la URL de portada"
+                  className="w-full px-2.5 py-1 bg-white border border-stone-300 rounded-md text-[11px] text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -209,3 +300,7 @@ export const AdminSettings: React.FC = () => {
     </div>
   );
 };
+
+// https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&auto=format&fit=crop&q=80
+
+// https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=1200&auto=format&fit=crop&q=80

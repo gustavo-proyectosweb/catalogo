@@ -1,7 +1,12 @@
+// src/components/admin/ProductFormModal.tsx
+
 import React, { useState, useEffect } from 'react';
 import { Product, Category, ExtraOption } from '../../types';
 import { X, Plus, Trash2, Image, Sparkles, Check } from 'lucide-react';
 import { formatPrice } from '../../utils/formatters';
+
+import { uploadImageToCloudinary } from '../../services/cloudinary';
+import { Upload, Loader2 } from 'lucide-react';
 
 interface ProductFormModalProps {
   productToEdit: Product | null;
@@ -44,6 +49,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   // New extra field state
   const [newExtraName, setNewExtraName] = useState('');
   const [newExtraPrice, setNewExtraPrice] = useState<number | string>(1000);
+
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (productToEdit) {
@@ -120,6 +127,21 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       });
     }
     onClose();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const url = await uploadImageToCloudinary(file);
+      setImageUrl(url); // Asigna automáticamente la URL devuelta por Cloudinary
+    } catch (error) {
+      alert('Hubo un error al subir la imagen. Por favor intenta de nuevo.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -257,31 +279,54 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </button>
           </div>
 
-          {/* Image Selection with Presets + Custom URL */}
+          {/* Image Selection with Upload + Presets + Custom URL */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-stone-700">
               Imagen del producto
             </label>
 
-            {/* Current preview */}
-            <div className="flex items-center gap-4 p-3 bg-stone-50 rounded-2xl border border-stone-200">
-              <div className="w-16 h-16 rounded-xl overflow-hidden bg-stone-200 shrink-0 border border-stone-300">
-                <img
-                  src={imageUrl || PRESET_IMAGES[0].url}
-                  alt="Vista previa"
-                  className="w-full h-full object-cover"
-                />
+            {/* Current preview & Upload / URL */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-3 bg-stone-50 rounded-2xl border border-stone-200">
+              <div className="w-16 h-16 rounded-xl overflow-hidden bg-stone-200 shrink-0 border border-stone-300 relative flex items-center justify-center">
+                {uploading ? (
+                  <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
+                ) : (
+                  <img
+                    src={imageUrl || PRESET_IMAGES[0].url}
+                    alt="Vista previa"
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
 
-              <div className="flex-1 min-w-0">
-                <span className="text-xs font-semibold text-stone-600 block">URL de la imagen</span>
-                <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full mt-1 px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-amber-500"
-                />
+              <div className="flex-1 w-full space-y-2">
+                {/* Botón para subir desde dispositivo */}
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{uploading ? 'Subiendo...' : 'Subir foto local'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
+                  {uploading && <span className="text-xs text-amber-600 font-semibold">Procesando imagen...</span>}
+                </div>
+
+                {/* Input para pegar URL manual */}
+                <div>
+                  <span className="text-[11px] font-semibold text-stone-500 block">O pegá una URL de imagen:</span>
+                  <input
+                    type="text"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    className="w-full mt-0.5 px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-800 truncate focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
               </div>
             </div>
 
