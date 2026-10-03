@@ -135,107 +135,112 @@ export const AdminCategories: React.FC = () => {
         </form>
       )}
 
-      {/* Categories list */}
-      <div className="space-y-2.5">
-        {categories.map((cat, index) => {
-          const isEditingThis = editingCategoryId === cat.id;
+     {/* Categories list */}
+<div className="max-w-4xl mx-auto space-y-3">
+  {categories.map((cat, index) => {
+    const isEditingThis = editingCategoryId === cat.id;
 
-          return (
-            <div
-              key={cat.id}
-              className="bg-white rounded-2xl border border-stone-200 p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-xs hover:border-brand-primary/50 transition"
+    return (
+      <div
+        key={cat.id}
+        className="bg-white rounded-2xl border border-stone-200 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs hover:border-brand-primary/50 transition"
+      >
+        {isEditingThis ? (
+          <div className="flex-1 flex items-center gap-2">
+            <input
+              type="text"
+              value={editingName}
+              onChange={(e) => setEditingName(e.target.value)}
+              className="flex-1 px-3 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-sm text-stone-900 focus:outline-none focus:border-brand-primary"
+              autoFocus
+            />
+            <button
+              onClick={() => handleSaveEdit(cat)}
+              className="p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition cursor-pointer"
+              title="Guardar"
             >
-              {isEditingThis ? (
-                <div className="flex-1 flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    className="flex-1 px-3 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-sm text-stone-900"
-                    autoFocus
-                  />
-                  <button
-                    onClick={() => handleSaveEdit(cat)}
-                    className="p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg"
-                    title="Guardar"
-                  >
-                    <Check className="w-4 h-4 stroke-[3]" />
-                  </button>
-                  <button
-                    onClick={() => setEditingCategoryId(null)}
-                    className="p-2 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-lg"
-                    title="Cancelar"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-md bg-stone-100 text-stone-500 flex items-center justify-center font-bold text-xs">
-                      {index + 1}
-                    </span>
-                    <span className="font-heading font-black text-stone-900 text-base">
-                      {cat.name}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {/* Botón Subir */}
-  <button
-    onClick={() => handleMoveCategory(index, 'up')}
-    disabled={index === 0}
-    className="p-1.5 text-stone-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
-    title="Mover arriba"
-  >
-    <ArrowUp className="w-4 h-4" />
-  </button>
-
-  {/* Botón Bajar */}
-  <button
-    onClick={() => handleMoveCategory(index, 'down')}
-    disabled={index === categories.length - 1}
-    className="p-1.5 text-stone-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
-    title="Mover abajo"
-  >
-    <ArrowDown className="w-4 h-4" />
-  </button>
-                    {/* Active toggle */}
-                    <button
-                      onClick={() => handleToggleActive(cat)}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer ${
-                        cat.active
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-stone-100 text-stone-500 border border-stone-200'
-                      }`}
-                    >
-                      {cat.active ? 'Activa' : 'Oculta'}
-                    </button>
-
-                    {/* Edit */}
-                    <button
-                      onClick={() => handleStartEdit(cat)}
-                      className="p-2 rounded-xl text-stone-600 hover:bg-stone-100 transition"
-                      title="Editar nombre"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-
-                    {/* Delete */}
-                    <button
-                      onClick={() => handleDelete(cat.id, cat.name)}
-                      className="p-2 rounded-xl text-stone-400 hover:text-red-500 hover:bg-red-50 transition"
-                      title="Eliminar categoría"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </>
-              )}
+              <Check className="w-4 h-4 stroke-[3]" />
+            </button>
+            <button
+              onClick={() => setEditingCategoryId(null)}
+              className="p-2 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-lg transition cursor-pointer"
+              title="Cancelar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Lado Izquierdo: Número y Nombre */}
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-7 h-7 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center font-bold text-xs shrink-0">
+                {index + 1}
+              </span>
+              <span className="font-heading font-black text-stone-900 text-base truncate">
+                {cat.name}
+              </span>
             </div>
-          );
-        })}
+
+            {/* Lado Derecho / Fila Inferior en Mobile */}
+            <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-stone-100">
+              {/* Botonera Subir / Bajar */}
+              <div className="flex items-center bg-stone-100 p-0.5 rounded-xl border border-stone-200/80">
+                <button
+                  onClick={() => handleMoveCategory(index, 'up')}
+                  disabled={index === 0}
+                  className="p-1.5 text-stone-600 hover:text-stone-900 hover:bg-white disabled:opacity-25 disabled:cursor-not-allowed rounded-lg transition cursor-pointer"
+                  title="Mover arriba"
+                >
+                  <ArrowUp className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={() => handleMoveCategory(index, 'down')}
+                  disabled={index === categories.length - 1}
+                  className="p-1.5 text-stone-600 hover:text-stone-900 hover:bg-white disabled:opacity-25 disabled:cursor-not-allowed rounded-lg transition cursor-pointer"
+                  title="Mover abajo"
+                >
+                  <ArrowDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Toggle Activa / Oculta */}
+              <button
+                onClick={() => handleToggleActive(cat)}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
+                  cat.active
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : 'bg-stone-100 text-stone-500 border border-stone-200'
+                }`}
+              >
+                {cat.active ? 'Activa' : 'Oculta'}
+              </button>
+
+              {/* Acciones Editar y Eliminar */}
+              <div className="flex items-center gap-1 border-l border-stone-200 pl-1.5 ml-1">
+                <button
+                  onClick={() => handleStartEdit(cat)}
+                  className="p-2 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition cursor-pointer"
+                  title="Editar nombre"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => handleDelete(cat.id, cat.name)}
+                  className="p-2 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                  title="Eliminar categoría"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
+    );
+  })}
+</div>
     </div>
   );
 };
