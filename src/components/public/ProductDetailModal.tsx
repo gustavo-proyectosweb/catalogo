@@ -1,5 +1,3 @@
-// src/components/ProductDetailModal.tsx
-
 import React, { useState, useEffect } from 'react';
 import { Product, ExtraOption } from '../../types';
 import { formatPrice } from '../../utils/formatters';
@@ -8,7 +6,12 @@ import { X, Plus, Minus, Check, ShoppingBag, Sparkles } from 'lucide-react';
 interface ProductDetailModalProps {
   product: Product | null;
   onClose: () => void;
-  onAddToCart: (product: Product, quantity: number, selectedExtras: ExtraOption[], notes?: string) => void;
+  onAddToCart: (
+    product: Product,
+    quantity: number,
+    selectedExtras: ExtraOption[],
+    notes?: string
+  ) => void;
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
@@ -27,6 +30,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       setSelectedExtras([]);
       setNotes('');
     }
+  }, [product]);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (product) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [product]);
 
   if (!product) return null;
@@ -60,9 +76,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       {/* Background click to dismiss */}
       <div className="fixed inset-0 -z-10" onClick={onClose} />
 
-      <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-stone-200 animate-in slide-in-from-bottom duration-300">
-        {/* Modal Header / Image */}
-        <div className="relative aspect-[16/10] w-full bg-stone-100 shrink-0">
+      <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[96vh] sm:max-h-[85vh] h-auto flex flex-col shadow-2xl overflow-hidden border border-stone-200 animate-in slide-in-from-bottom duration-300">
+        {/* Modal Header / Image (con altura limitada para no desplazar el contenido) */}
+        <div className="relative w-full max-h-[200px] sm:max-h-[260px] aspect-[16/9] sm:aspect-[16/10] bg-stone-100 shrink-0 overflow-hidden">
           <img
             src={product.imageUrl}
             alt={product.name}
@@ -70,40 +86,42 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           />
           <button
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 p-2 rounded-full bg-stone-900/70 hover:bg-stone-900 text-white backdrop-blur-md transition cursor-pointer"
+            className="absolute top-3.5 right-3.5 p-2 rounded-full bg-stone-900/70 hover:bg-stone-900 text-white backdrop-blur-md transition cursor-pointer z-10"
             aria-label="Cerrar modal"
           >
             <X className="w-5 h-5" />
           </button>
 
           {product.badge && (
-            <span className="absolute top-3.5 left-3.5 px-3 py-1 rounded-lg bg-brand-primary text-stone-950 text-xs font-black shadow-md">
+            <span className="absolute top-3.5 left-3.5 px-3 py-1 rounded-lg bg-brand-primary text-stone-950 text-xs font-black shadow-md z-10">
               {product.badge}
             </span>
           )}
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
           {/* Title and Price */}
           <div>
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="text-2xl font-black font-heading text-stone-900">
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-xl sm:text-2xl font-black font-heading text-stone-900 leading-tight">
                 {product.name}
               </h2>
-              <span className="text-2xl font-black text-stone-900 tracking-tight shrink-0">
+              <span className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight shrink-0">
                 {formatPrice(product.price)}
               </span>
             </div>
 
-            <p className="mt-2 text-stone-600 text-sm leading-relaxed">
-              {product.description}
-            </p>
+            {product.description && (
+              <p className="mt-2 text-stone-600 text-xs sm:text-sm leading-relaxed">
+                {product.description}
+              </p>
+            )}
           </div>
 
           {/* Extras Section */}
           {product.extras && product.extras.length > 0 && (
-            <div className="space-y-3 pt-4 border-t border-stone-100">
+            <div className="space-y-3 pt-3 border-t border-stone-100">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-brand-primary" />
@@ -135,10 +153,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         >
                           {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                         </div>
-                        <span className="text-sm font-semibold">{extra.name}</span>
+                        <span className="text-xs sm:text-sm font-semibold">{extra.name}</span>
                       </div>
 
-                      <span className="text-sm font-bold text-stone-800">
+                      <span className="text-xs sm:text-sm font-bold text-stone-800">
                         +{formatPrice(extra.price)}
                       </span>
                     </label>
@@ -149,7 +167,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           )}
 
           {/* Special Instructions Note */}
-          <div className="pt-2">
+          <div className="pt-1">
             <label className="block text-xs font-bold text-stone-600 mb-1.5">
               ¿Alguna aclaración? (Opcional)
             </label>
@@ -165,23 +183,23 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         </div>
 
         {/* Modal Sticky Bottom Bar */}
-        <div className="p-4 sm:p-5 bg-stone-50 border-t border-stone-200 flex items-center gap-3 shrink-0">
+        <div className="p-3.5 sm:p-5 bg-stone-50 border-t border-stone-200 flex items-center gap-3 shrink-0">
           {/* Quantity Stepper */}
           <div className="flex items-center bg-white border border-stone-200 rounded-xl p-1 shadow-sm shrink-0">
             <button
-              onClick={handleIncrement}
+              onClick={handleDecrement}
               disabled={quantity <= 1}
-              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition"
+              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition"
               aria-label="Disminuir cantidad"
             >
               <Minus className="w-4 h-4" />
             </button>
-            <span className="w-9 text-center font-bold text-stone-900 text-base">
+            <span className="w-8 sm:w-9 text-center font-bold text-stone-900 text-sm sm:text-base">
               {quantity}
             </span>
             <button
               onClick={handleIncrement}
-              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-700 cursor-pointer transition"
+              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-700 cursor-pointer transition"
               aria-label="Aumentar cantidad"
             >
               <Plus className="w-4 h-4" />
@@ -191,10 +209,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* Add to Cart Button */}
           <button
             onClick={handleAdd}
-            className="flex-1 flex items-center justify-between px-5 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary active:scale-[0.99] text-stone-950 font-black text-sm sm:text-base shadow-lg shadow-brand-primary/50/20 transition cursor-pointer"
+            className="flex-1 flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary active:scale-[0.99] text-stone-950 font-black text-xs sm:text-base shadow-lg shadow-brand-primary/50/20 transition cursor-pointer"
           >
             <span className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5" />
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Agregar al pedido</span>
             </span>
             <span>{formatPrice(totalPrice)}</span>
