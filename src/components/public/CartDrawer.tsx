@@ -26,7 +26,7 @@ export const CartDrawer: React.FC = () => {
 
   // Build formatted WhatsApp message
   const buildWhatsappMessage = (): string => {
-    let msg = `🍔 *¡Hola ${business.name}! Quiero realizar un pedido:*\n\n`;
+    let msg = `*¡Hola ${business.name}! Quiero realizar un pedido:*\n\n`;
 
     cart.forEach((item) => {
       msg += `• *${item.quantity}× ${item.product.name}* (${formatPrice(item.product.price)} c/u)\n`;
@@ -53,7 +53,7 @@ export const CartDrawer: React.FC = () => {
       msg += `📍 *Dirección/Aclaración:* ${addressOrNote.trim()}\n`;
     }
 
-    msg += `\n¿Podrían confirmarme el pedido y el tiempo de entrega? ¡Muchas gracias!`;
+    msg += `\n¿Podrían confirmarme el pedido y los pasos a seguir? ¡Muchas gracias!`;
 
     return msg;
   };
