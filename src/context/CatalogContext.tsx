@@ -3,21 +3,21 @@ import { BusinessInfo, Category, Product, CartItem, ExtraOption } from '../types
 import { INITIAL_BUSINESS, INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '../data/initialData';
 
 import { db } from '../firebase/config';
-import { 
-  collection, 
-  doc, 
-  onSnapshot, 
-  addDoc, 
-  updateDoc, 
+import {
+  collection,
+  doc,
+  onSnapshot,
+  addDoc,
+  updateDoc,
   deleteDoc,
-  setDoc 
+  setDoc
 } from 'firebase/firestore';
 
 import { auth } from '../firebase/config';
-import { 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged 
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
 } from 'firebase/auth';
 
 
@@ -25,6 +25,7 @@ interface CatalogContextType {
   business: BusinessInfo;
   categories: Category[];
   products: Product[];
+  isLoading: boolean;
   cart: CartItem[];
   cartTotal: number;
   cartCount: number;
@@ -65,6 +66,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [business, setBusiness] = useState<BusinessInfo>(INITIAL_BUSINESS);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -95,29 +97,38 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => unsub();
   }, []);
 
-  // 2. Escuchar Categorías
+  // 2 y 3. Escuchar Categorías y Productos con bandera de carga inicial
   useEffect(() => {
-    const unsub = onSnapshot(
+    let categoriesLoaded = false;
+    let productsLoaded = false;
+
+    const checkLoadingComplete = () => {
+      if (categoriesLoaded && productsLoaded) {
+        setIsLoading(false);
+      }
+    };
+
+    const unsubCategories = onSnapshot(
       collection(db, 'categories'),
       (snapshot) => {
         const cats = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as Category[];
-        
-        // Ordenamos numéricamente según la propiedad 'order'
-      const sortedCats = cats.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-      setCategories(sortedCats);
+        const sortedCats = cats.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        setCategories(sortedCats);
+        categoriesLoaded = true;
+        checkLoadingComplete();
       },
-      (error) => console.error("Error al escuchar categorías:", error)
+      (error) => {
+        console.error("Error al escuchar categorías:", error);
+        categoriesLoaded = true;
+        checkLoadingComplete();
+      }
     );
-    return () => unsub();
-  }, []);
 
-  // 3. Escuchar Productos
-  useEffect(() => {
-    const unsub = onSnapshot(
+    const unsubProducts = onSnapshot(
       collection(db, 'products'),
       (snapshot) => {
         const prods = snapshot.docs.map((doc) => ({
@@ -125,10 +136,20 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
           ...doc.data(),
         })) as Product[];
         setProducts(prods);
+        productsLoaded = true;
+        checkLoadingComplete();
       },
-      (error) => console.error("Error al escuchar productos:", error)
+      (error) => {
+        console.error("Error al escuchar productos:", error);
+        productsLoaded = true;
+        checkLoadingComplete();
+      }
     );
-    return () => unsub();
+
+    return () => {
+      unsubCategories();
+      unsubProducts();
+    };
   }, []);
 
   // Guardar Carrito en localStorage
@@ -232,24 +253,24 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // OPERACIONES DE CATEGORÍAS (FIRESTORE)
   // -------------------------------------------------------------
   const addCategory = async (categoryData: Omit<Category, 'id'>) => {
-  try {
-    // Calculamos el próximo número de orden disponible
-    const nextOrder = categories.length > 0 
-      ? Math.max(...categories.map((c) => c.order ?? 0)) + 1 
-      : 0;
+    try {
+      // Calculamos el próximo número de orden disponible
+      const nextOrder = categories.length > 0
+        ? Math.max(...categories.map((c) => c.order ?? 0)) + 1
+        : 0;
 
-    // Si categoryData no trae un order definido, le asignamos nextOrder
-    const finalData = {
-      ...categoryData,
-      order: categoryData.order ?? nextOrder,
-      active: categoryData.active ?? true,
-    };
+      // Si categoryData no trae un order definido, le asignamos nextOrder
+      const finalData = {
+        ...categoryData,
+        order: categoryData.order ?? nextOrder,
+        active: categoryData.active ?? true,
+      };
 
-    await addDoc(collection(db, 'categories'), finalData);
-  } catch (error) {
-    console.error("Error al agregar categoría:", error);
-  }
-};
+      await addDoc(collection(db, 'categories'), finalData);
+    } catch (error) {
+      console.error("Error al agregar categoría:", error);
+    }
+  };
 
   const updateCategory = async (updated: Category) => {
     try {
@@ -374,6 +395,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         business,
         categories,
         products,
+        isLoading,
         cart,
         cartTotal,
         cartCount,
