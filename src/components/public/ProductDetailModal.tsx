@@ -1,3 +1,5 @@
+// src/components/ProductDetailModal.tsx
+
 import React, { useState, useEffect } from 'react';
 import { Product, ExtraOption } from '../../types';
 import { formatPrice } from '../../utils/formatters';
@@ -155,7 +157,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ej: Sin cebolla, aderezo aparte, etc."
+              placeholder="Ej: Aclaraciones o indicaciones especiales para el pedido..."
               maxLength={120}
               className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
@@ -167,7 +169,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* Quantity Stepper */}
           <div className="flex items-center bg-white border border-stone-200 rounded-xl p-1 shadow-sm shrink-0">
             <button
-              onClick={handleDecrement}
+              onClick={handleIncrement}
               disabled={quantity <= 1}
               className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition"
               aria-label="Disminuir cantidad"

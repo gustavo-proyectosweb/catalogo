@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Product, Category, ExtraOption } from '../../types';
-import { X, Plus, Trash2, Image, Sparkles, Check } from 'lucide-react';
+import { X, Plus, Trash2, Check, Upload, Loader2 } from 'lucide-react';
 import { formatPrice } from '../../utils/formatters';
 
 import { uploadImageToCloudinary } from '../../services/cloudinary';
-import { Upload, Loader2 } from 'lucide-react';
 
 interface ProductFormModalProps {
   productToEdit: Product | null;
@@ -15,18 +14,12 @@ interface ProductFormModalProps {
   onSave: (productData: Omit<Product, 'id'> | Product) => void;
 }
 
-// Curated high quality food image presets so the user can easily swap images without needing to find a URL
+// Preset con imágenes neutras de ejemplo
 const PRESET_IMAGES = [
-  { label: 'Doble Smash Bacon', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80' },
-  { label: 'Burger Clásica', url: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&auto=format&fit=crop&q=80' },
-  { label: 'BBQ Crunchy', url: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=800&auto=format&fit=crop&q=80' },
-  { label: 'Cheddar Cascada', url: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=800&auto=format&fit=crop&q=80' },
-  { label: 'Veggie Portobello', url: 'https://images.unsplash.com/photo-1520072959219-c595dc870360?w=800&auto=format&fit=crop&q=80' },
-  { label: 'Combo Burger & Papas', url: 'https://images.unsplash.com/photo-1610440042657-612c34d95e9f?w=800&auto=format&fit=crop&q=80' },
-  { label: 'Papas Rústicas', url: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&auto=format&fit=crop&q=80' },
-  { label: 'Papas Cheddar & Bacon', url: 'https://images.unsplash.com/photo-1585109649139-366815a0d713?w=800&auto=format&fit=crop&q=80' },
-  { label: 'Aros de Cebolla', url: 'https://images.unsplash.com/photo-1639024471287-03521672366c?w=800&auto=format&fit=crop&q=80' },
-  { label: 'Gaseosa Cola', url: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=800&auto=format&fit=crop&q=80' },
+  { label: 'Producto Destacado', url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80' },
+  { label: 'Caja / Pack', url: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800&auto=format&fit=crop&q=80' },
+  { label: 'Bolsa de Regalo', url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=80' },
+  { label: 'Accesorios / Varios', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80' },
 ];
 
 export const ProductFormModal: React.FC<ProductFormModalProps> = ({
@@ -39,7 +32,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [price, setPrice] = useState<number | string>(12500);
+  const [price, setPrice] = useState<number | string>(1000);
   const [categoryId, setCategoryId] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [available, setAvailable] = useState(true);
@@ -48,7 +41,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   // New extra field state
   const [newExtraName, setNewExtraName] = useState('');
-  const [newExtraPrice, setNewExtraPrice] = useState<number | string>(1000);
+  const [newExtraPrice, setNewExtraPrice] = useState<number | string>(500);
 
   const [uploading, setUploading] = useState(false);
 
@@ -65,15 +58,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     } else {
       setName('');
       setDescription('');
-      setPrice(12500);
-      setCategoryId(categories[0]?.id || 'cat-hamburguesas');
+      setPrice(1000);
+      setCategoryId(categories[0]?.id || '');
       setImageUrl(PRESET_IMAGES[0].url);
       setAvailable(true);
       setBadge('');
-      setExtras([
-        { id: `ext-${Date.now()}-1`, name: 'Cheddar extra', price: 1000, available: true },
-        { id: `ext-${Date.now()}-2`, name: 'Panceta extra', price: 1500, available: true },
-      ]);
+      setExtras([]);
     }
   }, [productToEdit, categories]);
 
@@ -88,7 +78,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     };
     setExtras((prev) => [...prev, newExtra]);
     setNewExtraName('');
-    setNewExtraPrice(1000);
+    setNewExtraPrice(500);
   };
 
   const handleRemoveExtra = (id: string) => {
@@ -136,7 +126,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     try {
       setUploading(true);
       const url = await uploadImageToCloudinary(file);
-      setImageUrl(url); // Asigna automáticamente la URL devuelta por Cloudinary
+      setImageUrl(url);
     } catch (error) {
       alert('Hubo un error al subir la imagen. Por favor intenta de nuevo.');
     } finally {
@@ -180,7 +170,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ej: Doble Bacon"
+                placeholder="Ej: Producto o servicio"
                 className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
@@ -233,7 +223,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 type="text"
                 value={badge}
                 onChange={(e) => setBadge(e.target.value)}
-                placeholder="Ej: MÁS PEDIDA 🔥, NUEVO"
+                placeholder="Ej: DESTACADO ⭐, NUEVO, PROMO"
                 className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
@@ -242,13 +232,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           {/* Description */}
           <div>
             <label className="block text-xs font-bold text-stone-700 mb-1">
-              Descripción de ingredientes
+              Descripción del producto
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Pan brioche, doble carne, cheddar fundido..."
+              placeholder="Detalles, especificaciones o características..."
               className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
@@ -260,7 +250,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 Producto disponible
               </span>
               <span className="text-xs text-stone-500">
-                {available ? 'Visible y disponible para comprar' : 'Marcado como agotado en el menú'}
+                {available ? 'Visible y disponible para comprar' : 'Marcado como pausado / sin stock en el catálogo'}
               </span>
             </div>
 
@@ -279,13 +269,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </button>
           </div>
 
-          {/* Image Selection with Upload + Presets + Custom URL */}
+          {/* Image Selection */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-stone-700">
               Imagen del producto
             </label>
 
-            {/* Current preview & Upload / URL */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-3 bg-stone-50 rounded-2xl border border-stone-200">
               <div className="w-16 h-16 rounded-xl overflow-hidden bg-stone-200 shrink-0 border border-stone-300 relative flex items-center justify-center">
                 {uploading ? (
@@ -300,7 +289,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               </div>
 
               <div className="flex-1 w-full space-y-2">
-                {/* Botón para subir desde dispositivo */}
                 <div className="flex items-center gap-2">
                   <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition">
                     <Upload className="w-3.5 h-3.5" />
@@ -316,7 +304,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   {uploading && <span className="text-xs text-brand-primary font-semibold">Procesando imagen...</span>}
                 </div>
 
-                {/* Input para pegar URL manual */}
                 <div>
                   <span className="text-[11px] font-semibold text-stone-500 block">O pegá una URL de imagen:</span>
                   <input
@@ -330,7 +317,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               </div>
             </div>
 
-            {/* Quick Presets Picker */}
             <div>
               <span className="text-[11px] font-semibold text-stone-500 block mb-1">
                 O elegí una foto predefinida rápida:
@@ -366,7 +352,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 Opciones / Extras
               </label>
               <span className="text-xs text-stone-400">
-                {extras.length} {extras.length === 1 ? 'extra' : 'extras'} configurados
+                {extras.length} {extras.length === 1 ? 'opción' : 'opciones'} configuradas
               </span>
             </div>
 
@@ -384,7 +370,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                       type="button"
                       onClick={() => handleRemoveExtra(extra.id)}
                       className="text-stone-400 hover:text-red-500 p-1 rounded transition"
-                      title="Eliminar extra"
+                      title="Eliminar opción"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -399,7 +385,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 type="text"
                 value={newExtraName}
                 onChange={(e) => setNewExtraName(e.target.value)}
-                placeholder="Nombre del extra (ej: Huevo frito)"
+                placeholder="Nombre de la opción o extra"
                 className="flex-1 px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs text-stone-900"
               />
               <div className="relative w-28">
@@ -409,7 +395,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 <input
                   type="number"
                   min="0"
-                  step="100"
+                  step="50"
                   value={newExtraPrice}
                   onChange={(e) => setNewExtraPrice(e.target.value)}
                   className="w-full pl-6 pr-2 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-bold text-stone-900"
