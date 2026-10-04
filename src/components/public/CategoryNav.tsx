@@ -27,20 +27,21 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({
           {/* Option 'Todos' */}
           <button
             onClick={() => onSelectCategory('all')}
-            className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-              activeCategoryId === 'all'
+            className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${activeCategoryId === 'all'
                 ? 'bg-brand-primary text-stone-950 shadow-md shadow-brand-primary/50/20 scale-102'
                 : 'bg-stone-800/90 text-stone-300 hover:text-white hover:bg-stone-700/80 border border-stone-700/60'
-            }`}
+              }`}
           >
-            <LayoutGrid className="w-4 h-4 text-stone-950" />
+            <LayoutGrid
+              className={`w-4 h-4 ${activeCategoryId === 'all' ? 'text-stone-950' : 'text-brand-primary'
+                }`}
+            />
             <span>Todos</span>
             <span
-              className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                activeCategoryId === 'all'
+              className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${activeCategoryId === 'all'
                   ? 'bg-stone-950/20 text-stone-950'
                   : 'bg-stone-700 text-stone-300'
-              }`}
+                }`}
             >
               {totalProductsCount}
             </span>
@@ -56,22 +57,20 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({
               <button
                 key={cat.id}
                 onClick={() => onSelectCategory(cat.id)}
-                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                  isSelected
+                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${isSelected
                     ? 'bg-brand-primary text-stone-950 shadow-md shadow-brand-primary/50/20 scale-102'
                     : 'bg-stone-800/90 text-stone-300 hover:text-white hover:bg-stone-700/80 border border-stone-700/60'
-                }`}
+                  }`}
               >
                 {IconComponent && (
                   <IconComponent className={`w-4 h-4 ${isSelected ? 'text-stone-950' : 'text-brand-primary'}`} />
                 )}
                 <span>{cat.name}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                    isSelected
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${isSelected
                       ? 'bg-stone-950/20 text-stone-950'
                       : 'bg-stone-700 text-stone-300'
-                  }`}
+                    }`}
                 >
                   {count}
                 </span>

@@ -6,8 +6,7 @@ import { ProductCard } from './ProductCard';
 import { ProductDetailModal } from './ProductDetailModal';
 import { FloatingCartBar } from './FloatingCartBar';
 import { CartDrawer } from './CartDrawer';
-import { Product } from '../../types';
-import { MessageCircle, ShieldCheck } from 'lucide-react';
+import { Footer } from './Footer';
 
 export const PublicCatalogView: React.FC = () => {
   const {
@@ -17,7 +16,6 @@ export const PublicCatalogView: React.FC = () => {
     addToCart,
     selectedProductForDetail,
     setSelectedProductForDetail,
-    setViewMode,
   } = useCatalog();
 
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
@@ -57,27 +55,26 @@ export const PublicCatalogView: React.FC = () => {
   }, [products]);
 
   return (
-    <div className="min-h-screen bg-stone-100/70 pb-28">
-      {/* Hero Container: Pantalla completa en mobile (100dvh) y normal en Desktop */}
+    <div className="min-h-screen bg-stone-100/70">
+      {/* Contenedor Hero exclusivo para el Header en Mobile */}
       <div className="min-h-[calc(100dvh-36px)] sm:min-h-0 flex flex-col justify-between bg-stone-900">
-        {/* Header with Search and Business Info */}
         <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-
-        {/* Sticky Category Navigation (Ubicado al pie de la pantalla en Mobile) */}
-        <CategoryNav
-          categories={categories}
-          activeCategoryId={activeCategoryId}
-          onSelectCategory={(id) => {
-            setActiveCategoryId(id);
-            if (searchQuery) setSearchQuery('');
-          }}
-          productCountByCategory={productCountByCategory}
-          totalProductsCount={products.length}
-        />
       </div>
 
+      {/* Sticky Category Navigation */}
+      <CategoryNav
+        categories={categories}
+        activeCategoryId={activeCategoryId}
+        onSelectCategory={(id) => {
+          setActiveCategoryId(id);
+          if (searchQuery) setSearchQuery('');
+        }}
+        productCountByCategory={productCountByCategory}
+        totalProductsCount={products.length}
+      />
+
       {/* Main Catalog Section */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-2">
         {searchQuery ? (
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-bold text-stone-600">
@@ -85,7 +82,7 @@ export const PublicCatalogView: React.FC = () => {
             </h2>
             <button
               onClick={() => setSearchQuery('')}
-              className="text-xs font-semibold text-brand-primary hover:underline"
+              className="text-xs font-semibold text-brand-primary hover:underline cursor-pointer"
             >
               Ver todo el menú
             </button>
@@ -94,7 +91,7 @@ export const PublicCatalogView: React.FC = () => {
 
         {/* Group by category if 'all' is selected and no search, or display flat list */}
         {activeCategoryId === 'all' && !searchQuery ? (
-          <div className="space-y-10">
+          <div className="space-y-8">
             {activeCategories.map((cat) => {
               const categoryProducts = products.filter((p) => p.categoryId === cat.id);
               if (categoryProducts.length === 0) return null;
@@ -138,7 +135,7 @@ export const PublicCatalogView: React.FC = () => {
                     setSearchQuery('');
                     setActiveCategoryId('all');
                   }}
-                  className="mt-4 px-4 py-2 bg-brand-primary text-stone-950 font-bold rounded-xl text-xs"
+                  className="mt-4 px-4 py-2 bg-brand-primary text-stone-950 font-bold rounded-xl text-xs cursor-pointer"
                 >
                   Restablecer filtros
                 </button>
@@ -158,28 +155,8 @@ export const PublicCatalogView: React.FC = () => {
         )}
       </main>
 
-      {/* Footer Info */}
-      <footer className="max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-6 text-center text-xs text-stone-600 border-t border-stone-200/80 mt-12 space-y-3">
-        <div className="flex items-center justify-center gap-2 text-stone-700 font-semibold">
-          <span>{business.name}</span>
-          <span>•</span>
-          <span>{business.address}</span>
-        </div>
-
-        <p className="text-stone-600 max-w-md mx-auto">
-          "La web organiza. WhatsApp vende." Prototipo funcional para comercios con catálogo autogestionable y pedido directo.
-        </p>
-
-        <div className="pt-2 flex items-center justify-center gap-4 text-stone-600">
-          <button
-            onClick={() => setViewMode('admin')}
-            className="hover:text-stone-900 flex items-center gap-1 underline decoration-stone-300 cursor-pointer"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Acceso al Panel de Administración</span>
-          </button>
-        </div>
-      </footer>
+      {/* Footer */}
+      <Footer business={business} />
 
       {/* Product Detail Modal */}
       <ProductDetailModal
@@ -188,7 +165,7 @@ export const PublicCatalogView: React.FC = () => {
         onAddToCart={(prod, qty, extras, notes) => addToCart(prod, qty, extras, notes)}
       />
 
-      {/* Floating Bottom Cart Bar (fixed at bottom on mobile/desktop) */}
+      {/* Floating Bottom Cart Bar */}
       <FloatingCartBar />
 
       {/* Cart Drawer / Order Review */}

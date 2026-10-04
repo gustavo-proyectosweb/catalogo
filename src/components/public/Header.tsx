@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ searchQuery, setSearchQuery }) =
   };
 
   return (
-    <header className="relative bg-stone-900 text-white overflow-hidden pb-4 sm:pb-6 flex-1 flex flex-col justify-between">
+  <header className="relative bg-stone-900 text-white overflow-hidden pb-4 sm:pb-6 flex-1 flex flex-col justify-between">
       {/* Background Banner with gradient overlay */}
       <div className="relative h-44 sm:h-56 w-full overflow-hidden bg-stone-950">
         <img

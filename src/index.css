@@ -3,9 +3,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #E71D81;
+  --color-brand-primary: #FF8000;
   /* Color principal (ej: el naranja actual) */
-  --color-brand-primary-hover: #d97706;
+  --color-brand-primary-hover: #E67300;
   /* Color al pasar el mouse */
   --color-brand-text: #ffffff;
   /* Texto sobre el color principal */
