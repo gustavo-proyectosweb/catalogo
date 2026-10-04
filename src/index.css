@@ -1,9 +1,14 @@
+/* src/index.css */
+
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #E71D81;       /* Color principal (ej: el naranja actual) */
-  --color-brand-primary-hover: #d97706; /* Color al pasar el mouse */
-  --color-brand-text: #ffffff;          /* Texto sobre el color principal */
+  --color-brand-primary: #E71D81;
+  /* Color principal (ej: el naranja actual) */
+  --color-brand-primary-hover: #d97706;
+  /* Color al pasar el mouse */
+  --color-brand-text: #ffffff;
+  /* Texto sobre el color principal */
 }
 
 @layer base {
@@ -11,7 +16,11 @@
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
-  h1, h2, h3, h4, .font-heading {
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-heading {
     font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   }
 }
@@ -20,6 +29,7 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -29,4 +39,26 @@
 #netlify-modal-root,
 iframe[src*="netlify"] {
   display: none !important;
+}
+
+/* Marquesina fluida de entrada y salida completa */
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@media (max-width: 639px) {
+  .animate-marquee-mobile {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee-scroll 14s linear infinite;
+  }
+
+  .animate-marquee-mobile:hover {
+    animation-play-state: paused;
+  }
 }

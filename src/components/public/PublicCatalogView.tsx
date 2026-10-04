@@ -58,20 +58,23 @@ export const PublicCatalogView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-100/70 pb-28">
-      {/* Header with Search and Business Info */}
-      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      {/* Hero Container: Pantalla completa en mobile (100dvh) y normal en Desktop */}
+      <div className="min-h-[calc(100dvh-36px)] sm:min-h-0 flex flex-col justify-between bg-stone-900">
+        {/* Header with Search and Business Info */}
+        <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      {/* Sticky Category Navigation */}
-      <CategoryNav
-        categories={categories}
-        activeCategoryId={activeCategoryId}
-        onSelectCategory={(id) => {
-          setActiveCategoryId(id);
-          if (searchQuery) setSearchQuery('');
-        }}
-        productCountByCategory={productCountByCategory}
-        totalProductsCount={products.length}
-      />
+        {/* Sticky Category Navigation (Ubicado al pie de la pantalla en Mobile) */}
+        <CategoryNav
+          categories={categories}
+          activeCategoryId={activeCategoryId}
+          onSelectCategory={(id) => {
+            setActiveCategoryId(id);
+            if (searchQuery) setSearchQuery('');
+          }}
+          productCountByCategory={productCountByCategory}
+          totalProductsCount={products.length}
+        />
+      </div>
 
       {/* Main Catalog Section */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
