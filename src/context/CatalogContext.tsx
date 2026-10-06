@@ -62,6 +62,9 @@ interface CatalogContextType {
   updateCartQuantity: (cartItemId: string, delta: number) => void;
   removeFromCart: (cartItemId: string) => void;
   clearCart: () => void;
+  toastMessage: string | null;
+  showToast: (msg: string) => void;
+  hideToast: () => void;
 }
 
 const STORAGE_KEY = 'barrio_burger_catalog_v2';
@@ -73,6 +76,10 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => setToastMessage(msg);
+  const hideToast = () => setToastMessage(null);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -293,14 +300,14 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     quantity: number,
     selectedExtras: ExtraOption[] = [],
     notes?: string,
-    replaceCartItemId?: string // ID inmutable si estamos editando
+    replaceCartItemId?: string
   ) => {
     const extrasTotal = selectedExtras.reduce((sum, ext) => sum + ext.price, 0);
     const unitTotal = product.price + extrasTotal;
     const cleanNotes = notes ? notes.trim() : '';
 
     setCart((prevCart) => {
-      // 1. Si venimos de EDITAR (tenemos replaceCartItemId), actualizamos ESE elemento exacto
+      // 1. Si venimos de EDITAR, actualizamos ESE elemento exacto
       if (replaceCartItemId) {
         return prevCart.map((item) => {
           if (item.cartItemId === replaceCartItemId) {
@@ -317,7 +324,33 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         });
       }
 
-      // 2. Si es un producto NUEVO agregado desde el catálogo, generamos un ID ÚNICO e INMUTABLE
+      // 2. Si es un producto NUEVO, verificamos si ya existe uno IDÉNTICO
+      const sortedNewExtras = [...selectedExtras].map((e) => e.id).sort().join(',');
+
+      const existingIndex = prevCart.findIndex((item) => {
+        if (item.product.id !== product.id) return false;
+        const sortedItemExtras = [...(item.selectedExtras || [])].map((e) => e.id).sort().join(',');
+        const sameExtras = sortedItemExtras === sortedNewExtras;
+        const sameNotes = (item.notes || '') === cleanNotes;
+        return sameExtras && sameNotes;
+      });
+
+      if (existingIndex > -1) {
+        // Sumamos la cantidad al ítem existente
+        return prevCart.map((item, idx) => {
+          if (idx === existingIndex) {
+            const newQty = item.quantity + quantity;
+            return {
+              ...item,
+              quantity: newQty,
+              subtotal: item.unitTotal * newQty,
+            };
+          }
+          return item;
+        });
+      }
+
+      // 3. Si no existe uno idéntico, creamos uno nuevo
       const uniqueCartItemId = typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : `${product.id}_${Date.now()}`;
@@ -335,8 +368,12 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return [...prevCart, newItem];
     });
 
-    // Limpiamos la referencia de edición al terminar
     setEditingCartItem(null);
+
+    const msg = replaceCartItemId
+      ? `Cambios guardados en ${product.name}`
+      : `¡${product.name} agregado al pedido!`;
+    showToast(msg);
   };
 
   const updateCartQuantity = (cartItemId: string, delta: number) => {
@@ -404,6 +441,9 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateCartQuantity,
         removeFromCart,
         clearCart,
+        toastMessage,
+        showToast,
+        hideToast,
       }}
     >
       {children}

@@ -82,6 +82,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const totalPrice = unitPrice * quantity;
 
   const handleAddOrSave = () => {
+    const isEditing = !!editingCartItem;
     const replaceId = editingCartItem ? editingCartItem.cartItemId : undefined;
 
     onAddToCart(
@@ -94,7 +95,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
     setEditingCartItem(null);
     onClose();
-    setIsCartOpen(true);
+
+    // Solo reabrimos el carrito si el usuario venía de EDITAR un ítem
+    if (isEditing) {
+      setIsCartOpen(true);
+    }
   };
 
   const isEditing = !!editingCartItem;

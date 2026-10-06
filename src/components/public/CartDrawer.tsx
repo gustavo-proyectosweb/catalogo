@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCatalog } from '../../context/CatalogContext';
+import { CartItem } from '../../types'; // <-- Soluciona el error de TypeScript
+import { ConfirmModal } from '../common/ConfirmModal'; // <-- Importamos el modal de confirmación
 import { formatPrice, sanitizeWhatsappNumber } from '../../utils/formatters';
 import { X, Trash2, Plus, Minus, Send, MapPin, User, AlertCircle, ShoppingBag, Pencil } from 'lucide-react';
 
@@ -22,6 +24,10 @@ export const CartDrawer: React.FC = () => {
 
   const [errors, setErrors] = useState<{ name?: string; address?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Estados para diálogos de confirmación
+  const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
     setErrors({});
@@ -105,7 +111,7 @@ export const CartDrawer: React.FC = () => {
       msg += `👤 *Cliente:* ${safeName}\n`;
     }
     msg += `🛵 *Modalidad:* ${deliveryType === 'delivery' ? 'Envío a domicilio' : 'Retiro por el local'}\n`;
-    
+
     if (safeAddress) {
       msg += `📍 *${deliveryType === 'delivery' ? 'Dirección:' : 'Aclaración:'}* ${safeAddress}\n`;
     }
@@ -136,7 +142,7 @@ export const CartDrawer: React.FC = () => {
       <div className="fixed inset-0 -z-10" onClick={() => setIsCartOpen(false)} />
 
       <div className="bg-white w-full sm:max-w-md h-full flex flex-col shadow-2xl border-l border-stone-200 animate-in slide-in-from-right duration-300">
-        
+
         {/* Header */}
         <div className="p-4 sm:p-5 bg-stone-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -154,7 +160,7 @@ export const CartDrawer: React.FC = () => {
           <div className="flex items-center gap-1.5">
             {cart.length > 0 && (
               <button
-                onClick={clearCart}
+                onClick={() => setShowClearConfirm(true)}
                 className="text-stone-400 hover:text-red-400 p-2 rounded-lg hover:bg-stone-800 transition cursor-pointer"
                 title="Vaciar todo el pedido"
                 aria-label="Vaciar pedido"
@@ -264,7 +270,7 @@ export const CartDrawer: React.FC = () => {
                           <span className="text-stone-300">|</span>
 
                           <button
-                            onClick={() => removeFromCart(item.cartItemId)}
+                            onClick={() => setItemToDelete(item)}
                             className="text-stone-400 hover:text-red-500 text-xs flex items-center gap-1 transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -315,11 +321,10 @@ export const CartDrawer: React.FC = () => {
                         if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
                       }}
                       placeholder="Tu nombre (ej: Carlos)"
-                      className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 ${
-                        errors.name
+                      className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 ${errors.name
                           ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
                           : 'border-stone-200 focus:ring-brand-primary'
-                      }`}
+                        }`}
                     />
                   </div>
                   {errors.name && (
@@ -334,22 +339,20 @@ export const CartDrawer: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setDeliveryType('delivery')}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${
-                      deliveryType === 'delivery'
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${deliveryType === 'delivery'
                         ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
                         : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
-                    }`}
+                      }`}
                   >
                     🛵 Envío a domicilio
                   </button>
                   <button
                     type="button"
                     onClick={() => setDeliveryType('takeaway')}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${
-                      deliveryType === 'takeaway'
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${deliveryType === 'takeaway'
                         ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
                         : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
-                    }`}
+                      }`}
                   >
                     🛍️ Retiro en local
                   </button>
@@ -371,11 +374,10 @@ export const CartDrawer: React.FC = () => {
                           ? 'Dirección de entrega (calle, número, piso/depto)'
                           : 'Aclaración para el retiro (opcional, ej: paso 21:30)'
                       }
-                      className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 resize-none ${
-                        errors.address
+                      className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 resize-none ${errors.address
                           ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
                           : 'border-stone-200 focus:ring-brand-primary'
-                      }`}
+                        }`}
                     />
                   </div>
                   {errors.address && (
@@ -416,6 +418,31 @@ export const CartDrawer: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modales de Confirmación UI */}
+      <ConfirmModal
+        isOpen={showClearConfirm}
+        title="¿Vaciar el pedido?"
+        description="Se removerán todos los productos agregados a tu carrito."
+        confirmText="Sí, vaciar"
+        cancelText="Volver"
+        onConfirm={clearCart}
+        onCancel={() => setShowClearConfirm(false)}
+      />
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        title={`¿Quitar ${itemToDelete?.product.name}?`}
+        description="Este producto se removerá de la lista de tu pedido."
+        confirmText="Eliminar"
+        cancelText="Conservar"
+        onConfirm={() => {
+          if (itemToDelete) {
+            removeFromCart(itemToDelete.cartItemId);
+          }
+        }}
+        onCancel={() => setItemToDelete(null)}
+      />
     </div>
   );
 };

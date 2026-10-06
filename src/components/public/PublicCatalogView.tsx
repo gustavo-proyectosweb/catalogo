@@ -9,6 +9,7 @@ import { CartDrawer } from './CartDrawer';
 import { Footer } from './Footer';
 import { ProductSkeleton } from './ProductSkeleton';
 import { CategorySkeleton } from './CategorySkeleton';
+import { Toast } from './Toast';
 
 export const PublicCatalogView: React.FC = () => {
   const {
@@ -19,7 +20,9 @@ export const PublicCatalogView: React.FC = () => {
     addToCart,
     selectedProductForDetail,
     setSelectedProductForDetail,
-    editingCartItem
+    editingCartItem,
+    toastMessage,
+    hideToast
   } = useCatalog();
 
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
@@ -40,7 +43,6 @@ export const PublicCatalogView: React.FC = () => {
       const wordBoundaryRegex = new RegExp(`\\b${q}`, 'i');
 
       result = result.filter((p) => {
-        // Solo evalúa el nombre del producto
         return wordBoundaryRegex.test(p.name);
       });
     } else if (activeCategoryId !== 'all') {
@@ -85,14 +87,12 @@ export const PublicCatalogView: React.FC = () => {
       {/* Main Catalog Section */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-2">
         {isLoading ? (
-          /* Esqueleto de carga para la grilla de productos */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {Array.from({ length: 6 }).map((_, index) => (
               <ProductSkeleton key={index} />
             ))}
           </div>
         ) : (
-          /* Renderizado normal del catálogo */
           <>
             {searchQuery ? (
               <div className="mb-4 flex items-center justify-between">
@@ -108,7 +108,6 @@ export const PublicCatalogView: React.FC = () => {
               </div>
             ) : null}
 
-            {/* Group by category if 'all' is selected and no search, or display flat list */}
             {activeCategoryId === 'all' && !searchQuery ? (
               <div className="space-y-8">
                 {activeCategories.map((cat) => {
@@ -194,6 +193,13 @@ export const PublicCatalogView: React.FC = () => {
 
       {/* Cart Drawer / Order Review */}
       <CartDrawer />
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage || ''}
+        isOpen={!!toastMessage}
+        onClose={hideToast}
+      />
     </div>
   );
 };
