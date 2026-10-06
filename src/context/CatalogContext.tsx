@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BusinessInfo, Category, Product, CartItem, ExtraOption } from '../types';
-import { INITIAL_BUSINESS, INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '../data/initialData';
+import { INITIAL_BUSINESS } from '../data/initialData';
 
-import { db } from '../firebase/config';
+import { db, auth } from '../firebase/config';
 import {
   collection,
   doc,
@@ -13,13 +13,11 @@ import {
   setDoc
 } from 'firebase/firestore';
 
-import { auth } from '../firebase/config';
 import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
-
 
 interface CatalogContextType {
   business: BusinessInfo;
@@ -38,6 +36,9 @@ interface CatalogContextType {
   setIsCartOpen: (open: boolean) => void;
   selectedProductForDetail: Product | null;
   setSelectedProductForDetail: (product: Product | null) => void;
+  editingCartItem: CartItem | null;
+  setEditingCartItem: (item: CartItem | null) => void;
+  openEditCartItem: (item: CartItem) => void;
   // Product actions
   addProduct: (product: Omit<Product, 'id'>) => Promise<Product>;
   updateProduct: (product: Product) => Promise<void>;
@@ -51,14 +52,19 @@ interface CatalogContextType {
   updateBusiness: (business: BusinessInfo) => Promise<void>;
   resetToDemoDefaults: () => Promise<void>;
   // Cart actions
-  addToCart: (product: Product, quantity: number, selectedExtras: ExtraOption[], notes?: string) => void;
+  addToCart: (
+    product: Product,
+    quantity: number,
+    selectedExtras: ExtraOption[],
+    notes?: string,
+    replaceCartItemId?: string
+  ) => void;
   updateCartQuantity: (cartItemId: string, delta: number) => void;
   removeFromCart: (cartItemId: string) => void;
   clearCart: () => void;
 }
 
 const STORAGE_KEY = 'barrio_burger_catalog_v2';
-const ADMIN_AUTH_KEY = 'barrio_burger_admin_auth';
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
@@ -71,7 +77,21 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_cart`);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+
+      const parsedCart: CartItem[] = JSON.parse(stored);
+
+      return parsedCart.map((item) => {
+        const extrasTotal = item.selectedExtras?.reduce((sum, ext) => sum + ext.price, 0) || 0;
+        const correctUnitTotal = item.product.price + extrasTotal;
+        const correctSubtotal = correctUnitTotal * item.quantity;
+
+        return {
+          ...item,
+          unitTotal: correctUnitTotal,
+          subtotal: correctSubtotal,
+        };
+      });
     } catch {
       return [];
     }
@@ -81,9 +101,22 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [selectedProductForDetail, setSelectedProductForDetail] = useState<Product | null>(null);
+  const [selectedProductForDetail, setSelectedProductForDetailState] = useState<Product | null>(null);
+  const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
 
-  // 1. Escuchar la información del Negocio (Documento único 'main')
+
+  const setSelectedProductForDetail = (product: Product | null) => {
+    setEditingCartItem(null);
+    setSelectedProductForDetailState(product);
+  };
+
+  // Función para abrir un producto nuevo desde el menú principal
+  const openProductDetail = (product: Product) => {
+    setEditingCartItem(null); // <-- Limpia cualquier edición previa para que la apertura empiece de cero
+    setSelectedProductForDetailState(product);
+  };
+
+  // Escuchar negocio
   useEffect(() => {
     const unsub = onSnapshot(
       doc(db, 'business', 'main'),
@@ -97,7 +130,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => unsub();
   }, []);
 
-  // 2 y 3. Escuchar Categorías y Productos con bandera de carga inicial
+  // Escuchar Categorías y Productos
   useEffect(() => {
     let categoriesLoaded = false;
     let productsLoaded = false;
@@ -152,7 +185,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
   }, []);
 
-  // Guardar Carrito en localStorage
+  // Guardar Carrito
   useEffect(() => {
     try {
       localStorage.setItem(`${STORAGE_KEY}_cart`, JSON.stringify(cart));
@@ -161,20 +194,14 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [cart]);
 
-
-  // Listener en tiempo real del estado de autenticación en Firebase
+  // Auth Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsAdminAuthenticated(true);
-      } else {
-        setIsAdminAuthenticated(false);
-      }
+      setIsAdminAuthenticated(!!user);
     });
     return () => unsubscribe();
   }, []);
 
-  // Login real con Firebase Auth
   const loginAdmin = async (email: string, pass: string): Promise<boolean> => {
     try {
       await signInWithEmailAndPassword(auth, email, pass);
@@ -185,7 +212,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  // Logout real con Firebase Auth
   const logoutAdmin = async () => {
     try {
       await signOut(auth);
@@ -195,168 +221,122 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-
-  // -------------------------------------------------------------
-  // OPERACIONES DE PRODUCTOS (FIRESTORE)
-  // -------------------------------------------------------------
+  // Product Actions
   const addProduct = async (productData: Omit<Product, 'id'>): Promise<Product> => {
-    try {
-      const docRef = await addDoc(collection(db, 'products'), productData);
-      return {
-        ...productData,
-        id: docRef.id,
-      };
-    } catch (error) {
-      console.error("Error al agregar producto:", error);
-      throw error;
-    }
+    const docRef = await addDoc(collection(db, 'products'), productData);
+    return { ...productData, id: docRef.id };
   };
 
   const updateProduct = async (updated: Product) => {
-    try {
-      const { id, ...dataToUpdate } = updated;
-      const productRef = doc(db, 'products', id);
-      await updateDoc(productRef, dataToUpdate);
+    const { id, ...dataToUpdate } = updated;
+    await updateDoc(doc(db, 'products', id), dataToUpdate);
 
-      // Si el producto estaba abierto en el detalle, actualizamos el modal
-      setSelectedProductForDetail((current) => (current && current.id === updated.id ? updated : current));
-    } catch (error) {
-      console.error("Error al actualizar producto:", error);
+    // Si el producto que se editó es el que está actualmente abierto en el modal, se actualiza
+    if (selectedProductForDetail && selectedProductForDetail.id === updated.id) {
+      setSelectedProductForDetail(updated);
     }
   };
 
   const deleteProduct = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, 'products', id));
-      // Limpiamos del carrito local si existía ese producto
-      setCart((prev) => prev.filter((item) => item.product.id !== id));
-    } catch (error) {
-      console.error("Error al eliminar producto:", error);
-    }
+    await deleteDoc(doc(db, 'products', id));
+    setCart((prev) => prev.filter((item) => item.product.id !== id));
   };
 
   const toggleProductAvailability = async (id: string) => {
-    try {
-      const product = products.find((p) => p.id === id);
-      if (!product) return;
-
-      const productRef = doc(db, 'products', id);
-      await updateDoc(productRef, {
-        available: !product.available,
-      });
-    } catch (error) {
-      console.error("Error al cambiar disponibilidad:", error);
-    }
+    const product = products.find((p) => p.id === id);
+    if (!product) return;
+    await updateDoc(doc(db, 'products', id), { available: !product.available });
   };
 
-  // -------------------------------------------------------------
-  // OPERACIONES DE CATEGORÍAS (FIRESTORE)
-  // -------------------------------------------------------------
+  // Category Actions
   const addCategory = async (categoryData: Omit<Category, 'id'>) => {
-    try {
-      // Calculamos el próximo número de orden disponible
-      const nextOrder = categories.length > 0
-        ? Math.max(...categories.map((c) => c.order ?? 0)) + 1
-        : 0;
-
-      // Si categoryData no trae un order definido, le asignamos nextOrder
-      const finalData = {
-        ...categoryData,
-        order: categoryData.order ?? nextOrder,
-        active: categoryData.active ?? true,
-      };
-
-      await addDoc(collection(db, 'categories'), finalData);
-    } catch (error) {
-      console.error("Error al agregar categoría:", error);
-    }
+    const nextOrder = categories.length > 0
+      ? Math.max(...categories.map((c) => c.order ?? 0)) + 1
+      : 0;
+    await addDoc(collection(db, 'categories'), {
+      ...categoryData,
+      order: categoryData.order ?? nextOrder,
+      active: categoryData.active ?? true,
+    });
   };
 
   const updateCategory = async (updated: Category) => {
-    try {
-      const { id, ...dataToUpdate } = updated;
-      const categoryRef = doc(db, 'categories', id);
-      await updateDoc(categoryRef, dataToUpdate);
-    } catch (error) {
-      console.error("Error al actualizar categoría:", error);
-    }
+    const { id, ...dataToUpdate } = updated;
+    await updateDoc(doc(db, 'categories', id), dataToUpdate);
   };
 
   const deleteCategory = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, 'categories', id));
-    } catch (error) {
-      console.error("Error al eliminar categoría:", error);
-    }
+    await deleteDoc(doc(db, 'categories', id));
   };
 
-  // -------------------------------------------------------------
-  // OPERACIONES DEL NEGOCIO (FIRESTORE)
-  // -------------------------------------------------------------
+  // Business Actions
   const updateBusiness = async (updated: BusinessInfo) => {
-    try {
-      // Guardamos o actualizamos directamente el documento 'main' en la colección 'business'
-      const businessRef = doc(db, 'business', 'main');
-      await setDoc(businessRef, updated, { merge: true });
-    } catch (error) {
-      console.error("Error al actualizar la información del negocio:", error);
-    }
+    await setDoc(doc(db, 'business', 'main'), updated, { merge: true });
   };
 
   const resetToDemoDefaults = async () => {
-    try {
-      // 1. Restaurar negocio por defecto
-      await setDoc(doc(db, 'business', 'main'), INITIAL_BUSINESS);
-
-      // 2. Limpiar carrito local
-      setCart([]);
-      localStorage.removeItem(`${STORAGE_KEY}_cart`);
-
-      console.log("Datos de demostración restaurados");
-    } catch (error) {
-      console.error("Error al reiniciar a valores por defecto:", error);
-    }
+    await setDoc(doc(db, 'business', 'main'), INITIAL_BUSINESS);
+    setCart([]);
+    localStorage.removeItem(`${STORAGE_KEY}_cart`);
   };
-  // Cart operations
-  const addToCart = (product: Product, quantity: number, selectedExtras: ExtraOption[], notes?: string) => {
-    // Calculate unit total
+
+  // Abrir modal para editar un ítem existente del carrito
+  const openEditCartItem = (item: CartItem) => {
+    setEditingCartItem(item);
+    setSelectedProductForDetailState(item.product);
+    setIsCartOpen(false);
+  };
+
+  // Cart actions: Soporta agregar nuevo o reemplazar si se especificó un ID
+  const addToCart = (
+    product: Product,
+    quantity: number,
+    selectedExtras: ExtraOption[] = [],
+    notes?: string,
+    replaceCartItemId?: string // ID inmutable si estamos editando
+  ) => {
     const extrasTotal = selectedExtras.reduce((sum, ext) => sum + ext.price, 0);
     const unitTotal = product.price + extrasTotal;
-    const subtotal = unitTotal * quantity;
+    const cleanNotes = notes ? notes.trim() : '';
 
-    // Unique key based on product id and sorted extras ids
-    const extrasKey = selectedExtras
-      .map((e) => e.id)
-      .sort()
-      .join('-');
-    const cartItemId = `${product.id}__${extrasKey}__${notes || ''}`;
-
-    setCart((prev) => {
-      const existingIndex = prev.findIndex((item) => item.cartItemId === cartItemId);
-      if (existingIndex > -1) {
-        const next = [...prev];
-        const existing = next[existingIndex];
-        const newQty = existing.quantity + quantity;
-        next[existingIndex] = {
-          ...existing,
-          quantity: newQty,
-          subtotal: existing.unitTotal * newQty,
-        };
-        return next;
+    setCart((prevCart) => {
+      // 1. Si venimos de EDITAR (tenemos replaceCartItemId), actualizamos ESE elemento exacto
+      if (replaceCartItemId) {
+        return prevCart.map((item) => {
+          if (item.cartItemId === replaceCartItemId) {
+            return {
+              ...item,
+              quantity,
+              selectedExtras,
+              unitTotal,
+              subtotal: unitTotal * quantity,
+              notes: cleanNotes || undefined,
+            };
+          }
+          return item;
+        });
       }
-      return [
-        ...prev,
-        {
-          cartItemId,
-          product,
-          quantity,
-          selectedExtras,
-          unitTotal,
-          subtotal,
-          notes,
-        },
-      ];
+
+      // 2. Si es un producto NUEVO agregado desde el catálogo, generamos un ID ÚNICO e INMUTABLE
+      const uniqueCartItemId = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${product.id}_${Date.now()}`;
+
+      const newItem: CartItem = {
+        cartItemId: uniqueCartItemId,
+        product,
+        quantity,
+        selectedExtras,
+        unitTotal,
+        subtotal: unitTotal * quantity,
+        notes: cleanNotes || undefined,
+      };
+
+      return [...prevCart, newItem];
     });
+
+    // Limpiamos la referencia de edición al terminar
+    setEditingCartItem(null);
   };
 
   const updateCartQuantity = (cartItemId: string, delta: number) => {
@@ -408,6 +388,9 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setIsCartOpen,
         selectedProductForDetail,
         setSelectedProductForDetail,
+        editingCartItem,
+        setEditingCartItem,
+        openEditCartItem,
         addProduct,
         updateProduct,
         deleteProduct,

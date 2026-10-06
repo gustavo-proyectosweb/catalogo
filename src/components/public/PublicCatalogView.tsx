@@ -19,6 +19,7 @@ export const PublicCatalogView: React.FC = () => {
     addToCart,
     selectedProductForDetail,
     setSelectedProductForDetail,
+    editingCartItem
   } = useCatalog();
 
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
@@ -180,9 +181,12 @@ export const PublicCatalogView: React.FC = () => {
 
       {/* Product Detail Modal */}
       <ProductDetailModal
+        key={selectedProductForDetail ? `${selectedProductForDetail.id}-${editingCartItem?.cartItemId || 'new'}` : 'modal-closed'}
         product={selectedProductForDetail}
         onClose={() => setSelectedProductForDetail(null)}
-        onAddToCart={(prod, qty, extras, notes) => addToCart(prod, qty, extras, notes)}
+        onAddToCart={(prod, qty, extras, notes, replaceCartItemId) =>
+          addToCart(prod, qty, extras, notes, replaceCartItemId)
+        }
       />
 
       {/* Floating Bottom Cart Bar */}

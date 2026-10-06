@@ -9,15 +9,24 @@ import {
     Instagram
 } from 'lucide-react';
 import { BusinessInfo } from '../../types';
+import { useCatalog } from '../../context/CatalogContext';
 
 interface FooterProps {
     business: BusinessInfo;
 }
 
 export const Footer: React.FC<FooterProps> = ({ business }) => {
+    const { cartCount, isCartOpen } = useCatalog();
+    
+    // La barra flotante está visible solo si hay productos y el carrito no está desplegado
+    const isFloatingBarVisible = cartCount > 0 && !isCartOpen;
 
     return (
-        <footer className="w-full bg-stone-900 text-stone-300 pt-8 pb-8 border-t border-stone-800 mt-6">
+        <footer 
+            className={`w-full bg-stone-900 text-stone-300 pt-8 border-t border-stone-800 mt-6 transition-all duration-300 ${
+                isFloatingBarVisible ? 'pb-28 sm:pb-12' : 'pb-8'
+            }`}
+        >
             <div className="max-w-4xl mx-auto px-4 sm:px-6">
                 {/* Grilla principal: 2 columnas en Tablet/Desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-stone-800/80 text-sm">
