@@ -1,12 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useCatalog } from '../../context/CatalogContext';
 import { Product } from '../../types';
 import { formatPrice } from '../../utils/formatters';
-import { Plus, Edit3, Trash2, Search, Filter, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Edit3, Trash2, Search, AlertTriangle, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface AdminProductsProps {
   onOpenProductModal: (product: Product | null) => void;
 }
+
+const ITEMS_PER_PAGE = 10; // Cantidad de productos a mostrar por página
 
 export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal }) => {
   const {
@@ -18,6 +20,26 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
 
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Estado para el modal de confirmación de borrado
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  // Resetear a la página 1 cada vez que cambien los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedCategory]);
+
+  useEffect(() => {
+    if (productToDelete) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [productToDelete]);
 
   const categoriesMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -27,20 +49,33 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
     return map;
   }, [categories]);
 
+  // 1. Filtrar y ordenar
   const filteredProducts = useMemo(() => {
-    return products.filter((prod) => {
-      const matchesSearch =
-        prod.name.toLowerCase().includes(search.toLowerCase()) ||
-        prod.description.toLowerCase().includes(search.toLowerCase());
-      const matchesCat =
-        selectedCategory === 'all' || prod.categoryId === selectedCategory;
-      return matchesSearch && matchesCat;
-    });
+    const query = search.trim().toLowerCase();
+
+    return products
+      .filter((prod) => {
+        const matchesCat = selectedCategory === 'all' || prod.categoryId === selectedCategory;
+        if (!matchesCat) return false;
+        if (!query) return true;
+
+        return prod.name.toLowerCase().startsWith(query);
+      })
+      .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
   }, [products, search, selectedCategory]);
 
-  const handleDelete = (id: string, name: string) => {
-    if (window.confirm(`¿Estás seguro de que querés eliminar "${name}" del catálogo?`)) {
-      deleteProduct(id);
+  // 2. Calcular paginación
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE) || 1;
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
+
+  const confirmDelete = () => {
+    if (productToDelete) {
+      deleteProduct(productToDelete.id);
+      setProductToDelete(null);
     }
   };
 
@@ -74,7 +109,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre o ingrediente..."
+            placeholder="Buscar por nombre..."
             className="w-full pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-xl text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
         </div>
@@ -97,7 +132,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
 
       {/* Products List / Cards */}
       <div className="space-y-3">
-        {filteredProducts.length === 0 ? (
+        {paginatedProducts.length === 0 ? (
           <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center text-stone-500">
             <p className="font-bold text-sm">No se encontraron productos</p>
             <p className="text-xs text-stone-400 mt-1">
@@ -105,7 +140,7 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
             </p>
           </div>
         ) : (
-          filteredProducts.map((product) => {
+          paginatedProducts.map((product) => {
             const categoryName = categoriesMap[product.categoryId] || 'Sin categoría';
 
             return (
@@ -115,12 +150,20 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
               >
                 {/* Photo & Info */}
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 shrink-0 relative">
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 shrink-0 relative flex items-center justify-center">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-stone-400 p-1 text-center">
+                        <ImageIcon className="w-6 h-6 stroke-1 mb-0.5" />
+                        <span className="text-[9px] font-medium leading-none">Sin foto</span>
+                      </div>
+                    )}
+
                     {!product.available && (
                       <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[1px] flex items-center justify-center">
                         <span className="text-[10px] font-black text-red-300">Agotado</span>
@@ -150,9 +193,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
                   </div>
                 </div>
 
-                {/* Status Toggle & Action Buttons */}
+                {/* Actions */}
                 <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-100 shrink-0">
-                  {/* Availability quick switch */}
                   <button
                     type="button"
                     onClick={() => toggleProductAvailability(product.id)}
@@ -170,7 +212,6 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
                     <span>{product.available ? 'Disponible' : 'Agotado'}</span>
                   </button>
 
-                  {/* Edit button */}
                   <button
                     onClick={() => onOpenProductModal(product)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition cursor-pointer"
@@ -179,9 +220,8 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
                     <span>Editar</span>
                   </button>
 
-                  {/* Delete button */}
                   <button
-                    onClick={() => handleDelete(product.id, product.name)}
+                    onClick={() => setProductToDelete({ id: product.id, name: product.name })}
                     className="p-2 rounded-xl text-stone-400 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
                     title="Eliminar producto"
                   >
@@ -193,6 +233,70 @@ export const AdminProducts: React.FC<AdminProductsProps> = ({ onOpenProductModal
           })
         )}
       </div>
+
+      {/* Paginador */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white p-3.5 rounded-2xl border border-stone-200 text-xs font-semibold text-stone-600">
+          <span>
+            Mostrando página <strong className="text-stone-900">{currentPage}</strong> de{' '}
+            <strong className="text-stone-900">{totalPages}</strong> ({filteredProducts.length} resultados)
+          </span>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-xl border border-stone-200 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-xl border border-stone-200 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmación Borrado */}
+      {productToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl border border-stone-200 text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto shrink-0">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-bold text-stone-900">
+                ¿Eliminar producto?
+              </h3>
+              <p className="text-xs text-stone-500 mt-1">
+                ¿Estás seguro de que querés eliminar <span className="font-bold text-stone-800">"{productToDelete.name}"</span>? Esta acción no se puede deshacer.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setProductToDelete(null)}
+                className="flex-1 py-2 rounded-xl border border-stone-300 text-stone-700 font-bold text-xs hover:bg-stone-50 transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+              >
+                Sí, eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

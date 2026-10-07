@@ -53,8 +53,9 @@ export const CartDrawer: React.FC = () => {
 
   if (!isCartOpen) return null;
 
-  const sanitizeInput = (text: string): string => {
-    return text.replace(/<[^>]*>?/gm, '').trim();
+  const sanitizeInput = (str: string): string => {
+    if (!str) return '';
+    return str.replace(/[<>/]/g, '').trim(); // Solo elimina caracteres HTML peligrosos sin romper emojis
   };
 
   const validateForm = (): boolean => {
@@ -85,41 +86,49 @@ export const CartDrawer: React.FC = () => {
   const calculatedCartTotal = cart.reduce((acc, item) => acc + item.subtotal, 0);
 
   const buildWhatsappMessage = (): string => {
-    const safeName = sanitizeInput(customerName);
-    const safeAddress = sanitizeInput(addressOrNote);
+  const safeName = sanitizeInput(customerName);
+  const safeAddress = sanitizeInput(addressOrNote);
 
-    let msg = `*¡Hola ${business.name}! Quiero realizar un pedido:*\n\n`;
+  let msg = `*PEDIDO - ${business.name.toUpperCase()}*\n\n`;
 
-    cart.forEach((item) => {
-      msg += `• *${item.quantity}× ${item.product.name}* (Base: ${formatPrice(item.product.price)})\n`;
-      if (item.selectedExtras && item.selectedExtras.length > 0) {
-        item.selectedExtras.forEach((extra) => {
-          msg += `   + ${extra.name} (+${formatPrice(extra.price)})\n`;
-        });
-      }
-      if (item.notes) {
-        msg += `   _Nota: ${sanitizeInput(item.notes)}_\n`;
-      }
-      msg += `   Subtotal: ${formatPrice(item.subtotal)}\n\n`;
-    });
+  // Datos del Cliente y Entrega
+  if (safeName) {
+    msg += `*Cliente:* ${safeName}\n`;
+  }
+  msg += `*Entrega:* ${deliveryType === 'delivery' ? 'Envío a domicilio' : 'Retiro en local'}\n`;
 
-    msg += `------------------------------------\n`;
-    msg += `💰 *TOTAL ESTIMADO: ${formatPrice(calculatedCartTotal)}*\n`;
-    msg += `------------------------------------\n\n`;
+  if (safeAddress) {
+    msg += `*${deliveryType === 'delivery' ? 'Dirección' : 'Nota'}:* ${safeAddress}\n`;
+  }
 
-    if (safeName) {
-      msg += `👤 *Cliente:* ${safeName}\n`;
-    }
-    msg += `🛵 *Modalidad:* ${deliveryType === 'delivery' ? 'Envío a domicilio' : 'Retiro por el local'}\n`;
+  msg += `\n----------------------------------\n`;
+  msg += `*DETALLE DEL PEDIDO*\n`;
+  msg += `----------------------------------\n\n`;
 
-    if (safeAddress) {
-      msg += `📍 *${deliveryType === 'delivery' ? 'Dirección:' : 'Aclaración:'}* ${safeAddress}\n`;
+  // Productos compactos
+  cart.forEach((item) => {
+    msg += `*${item.quantity}x ${item.product.name}* - ${formatPrice(item.subtotal)}\n`;
+
+    if (item.selectedExtras && item.selectedExtras.length > 0) {
+      item.selectedExtras.forEach((extra) => {
+        msg += `  + ${extra.name} (${formatPrice(extra.price)})\n`;
+      });
     }
 
-    msg += `\n¿Podrían confirmarme el pedido y los pasos a seguir? ¡Muchas gracias!`;
+    if (item.notes) {
+      msg += `  _Aclaración: ${sanitizeInput(item.notes)}_\n`;
+    }
+    msg += `\n`;
+  });
 
-    return msg;
-  };
+  msg += `----------------------------------\n`;
+  msg += `*TOTAL: ${formatPrice(calculatedCartTotal)}*\n`;
+  msg += `----------------------------------\n\n`;
+
+  msg += `¿Me confirman la demora estimada? ¡Gracias!`;
+
+  return msg;
+};
 
   const handleSendToWhatsApp = () => {
     if (!validateForm()) return;
@@ -322,8 +331,8 @@ export const CartDrawer: React.FC = () => {
                       }}
                       placeholder="Tu nombre (ej: Carlos)"
                       className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 ${errors.name
-                          ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                          : 'border-stone-200 focus:ring-brand-primary'
+                        ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
+                        : 'border-stone-200 focus:ring-brand-primary'
                         }`}
                     />
                   </div>
@@ -340,8 +349,8 @@ export const CartDrawer: React.FC = () => {
                     type="button"
                     onClick={() => setDeliveryType('delivery')}
                     className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${deliveryType === 'delivery'
-                        ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
-                        : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
+                      ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
+                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
                       }`}
                   >
                     🛵 Envío a domicilio
@@ -350,8 +359,8 @@ export const CartDrawer: React.FC = () => {
                     type="button"
                     onClick={() => setDeliveryType('takeaway')}
                     className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${deliveryType === 'takeaway'
-                        ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
-                        : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
+                      ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
+                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
                       }`}
                   >
                     🛍️ Retiro en local
@@ -375,8 +384,8 @@ export const CartDrawer: React.FC = () => {
                           : 'Aclaración para el retiro (opcional, ej: paso 21:30)'
                       }
                       className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 resize-none ${errors.address
-                          ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                          : 'border-stone-200 focus:ring-brand-primary'
+                        ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
+                        : 'border-stone-200 focus:ring-brand-primary'
                         }`}
                     />
                   </div>

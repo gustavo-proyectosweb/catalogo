@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCatalog } from '../../context/CatalogContext';
-import { Store, Plus, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Plus, ArrowRight, CheckCircle2, EyeOff } from 'lucide-react';
 
 interface AdminHomeProps {
   onGoToProducts: () => void;
@@ -13,16 +13,43 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
   onOpenNewProduct,
   onGoToCategories,
 }) => {
-  const { business, products, categories, setViewMode } = useCatalog();
+  const { business, products, categories } = useCatalog();
+
+  // Flag preparado para el switch Abierto / Cerrado
+  const isStoreOpen = true;
+
+  // Métricas de Productos
+  const activeProductsCount = products.filter((p) => p.available).length;
+  const outOfStockProductsCount = products.filter((p) => !p.available).length;
+
+  // Métricas de Categorías
+  const activeCategoriesCount = categories.filter((c) => c.active ?? true).length;
+  const hiddenCategoriesCount = categories.filter((c) => c.active === false).length;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-stone-900 to-stone-950 text-white rounded-3xl p-6 sm:p-8 border border-stone-800 shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold border border-emerald-500/30">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Tu catálogo está activo y listo para recibir pedidos
+          
+          {/* Badge de Estado del Catálogo */}
+          <div
+            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+              isStoreOpen
+                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+            }`}
+          >
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                isStoreOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+              }`}
+            />
+            <span>
+              {isStoreOpen
+                ? 'Tu catálogo está activo y listo para recibir pedidos'
+                : 'El local figura cerrado (no se toman pedidos)'}
+            </span>
           </div>
 
           <div>
@@ -33,97 +60,94 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
               {business.name}
             </p>
             <p className="text-stone-400 text-xs sm:text-sm mt-1 max-w-lg">
-              Desde acá podés cambiar precios, fotos, crear nuevas hamburguesas y organizar tus categorías. Cualquier cambio se ve al instante.
+              Desde acá podés cambiar precios, fotos, crear nuevos productos y organizar tus categorías. Cualquier cambio se ve al instante.
             </p>
           </div>
 
-          <div className="pt-2 flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setViewMode('public')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-bold text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer"
-            >
-              <Store className="w-4 h-4" />
-              <span>Ver catálogo como cliente</span>
-            </button>
-
+          {/* Botón Principal */}
+          <div className="pt-2">
             <button
               onClick={onOpenNewProduct}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs sm:text-sm border border-stone-700 transition active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary/90 text-stone-950 font-black text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-brand-primary" />
+              <Plus className="w-4 h-4 stroke-[3]" />
               <span>Agregar producto</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Simple Summary Cards (Strictly keeping to user spec: no unnecessary charts or complex metrics) */}
+      {/* Tarjetas de Resumen de Productos y Categorías */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Products Card */}
+        
+        {/* Card Productos */}
         <div
           onClick={onGoToProducts}
-          className="bg-white p-6 rounded-3xl border border-stone-200/90 shadow-sm hover:shadow-md transition cursor-pointer flex items-center justify-between group"
+          className="bg-white p-6 rounded-3xl border border-stone-200/90 shadow-xs hover:shadow-md transition cursor-pointer flex items-center justify-between group"
         >
-          <div>
-            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-stone-400 uppercase tracking-wider block">
               Productos en Menú
             </span>
-            <span className="text-4xl font-extrabold text-stone-900 mt-1 block">
+            <span className="text-4xl font-black text-stone-900 block">
               {products.length}
             </span>
-            <span className="text-xs text-stone-600 mt-1 flex items-center gap-1">
-              <span className="text-emerald-700 font-bold">
-                {products.filter((p) => p.available).length} disponibles
+            <div className="text-xs text-stone-600 flex items-center gap-1.5 pt-1">
+              <span className="inline-flex items-center gap-1 text-emerald-700 font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {activeProductsCount} disponibles
               </span>
-              <span>•</span>
-              <span className="text-stone-600">
-                {products.filter((p) => !p.available).length} agotados
-              </span>
-            </span>
+              {outOfStockProductsCount > 0 && (
+                <>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1 text-amber-600 font-bold">
+                    <EyeOff className="w-3.5 h-3.5" />
+                    {outOfStockProductsCount} agotados
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
-          <div className="w-12 h-12 rounded-2xl bg-brand-primary/5 group-hover:bg-brand-primary/10 text-brand-primary flex items-center justify-center transition">
+          <div className="w-12 h-12 rounded-2xl bg-stone-100 group-hover:bg-brand-primary group-hover:text-stone-950 text-stone-700 flex items-center justify-center transition-all">
             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
 
-        {/* Categories Card */}
+        {/* Card Categorías */}
         <div
           onClick={onGoToCategories}
-          className="bg-white p-6 rounded-3xl border border-stone-200/90 shadow-sm hover:shadow-md transition cursor-pointer flex items-center justify-between group"
+          className="bg-white p-6 rounded-3xl border border-stone-200/90 shadow-xs hover:shadow-md transition cursor-pointer flex items-center justify-between group"
         >
-          <div>
-            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-stone-400 uppercase tracking-wider block">
               Categorías
             </span>
-            <span className="text-4xl font-extrabold text-stone-900 mt-1 block">
+            <span className="text-4xl font-black text-stone-900 block">
               {categories.length}
             </span>
-            <span className="text-xs text-stone-600 mt-1 block">
-              Organizadas en el menú público
-            </span>
+            <div className="text-xs text-stone-600 flex items-center gap-1.5 pt-1">
+              <span className="inline-flex items-center gap-1 text-emerald-700 font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {activeCategoriesCount} visibles
+              </span>
+              {hiddenCategoriesCount > 0 && (
+                <>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1 text-stone-500 font-bold">
+                    <EyeOff className="w-3.5 h-3.5" />
+                    {hiddenCategoriesCount} ocultas
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
-          <div className="w-12 h-12 rounded-2xl bg-stone-100 group-hover:bg-stone-200 text-stone-700 flex items-center justify-center transition">
+          <div className="w-12 h-12 rounded-2xl bg-stone-100 group-hover:bg-brand-primary group-hover:text-stone-950 text-stone-700 flex items-center justify-center transition-all">
             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
       </div>
-
-      {/* Demo helper tip box */}
-      <div className="p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/30 text-xs text-stone-800 shadow-sm">
-  <div className="flex items-start gap-2.5">
-    <Sparkles className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
-    <div>
-      <p className="font-bold text-stone-900">
-        Prueba sugerida para el dueño del local:
-      </p>
-      <p className="mt-0.5 text-stone-700 leading-relaxed">
-        Andá a la pestaña <strong className="text-brand-primary font-bold">"Productos"</strong>, hacé clic en <strong className="text-brand-primary font-bold">"Editar"</strong> en la hamburguesa <em>Doble Bacon</em>, aumentale el precio a <strong className="text-brand-primary font-bold">$13.500</strong> y guardá. Después tocá <strong className="text-brand-primary font-bold">"Ver catálogo"</strong> y mostrale que el cambio impactó en tiempo real.
-      </p>
-    </div>
-  </div>
-</div>
     </div>
   );
 };

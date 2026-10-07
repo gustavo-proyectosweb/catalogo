@@ -15,28 +15,32 @@ export const IconPicker: React.FC<IconPickerProps> = ({ value, onChange }) => {
 
   return (
     <div className="relative">
-      {/* Botón para abrir el selector visual */}
+      {/* Botón compacto para abrir el selector visual (sólo icono) */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        title={`Ícono actual: ${selectedItem.label}`}
         className="flex items-center gap-2 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-800 hover:border-stone-400 transition cursor-pointer"
       >
         <span className="text-stone-500 text-xs font-semibold">Ícono:</span>
-        <div className="flex items-center gap-1.5 font-bold text-stone-900">
+        <div className="flex items-center justify-center font-bold text-stone-900">
           {SelectedIcon ? (
-            <SelectedIcon className="w-4 h-4 text-brand-primary" />
+            <SelectedIcon className="w-4 h-4 text-brand-primary shrink-0" />
           ) : (
-            <Ban className="w-4 h-4 text-stone-400" />
+            <Ban className="w-4 h-4 text-stone-400 shrink-0" />
           )}
-          <span>{selectedItem.label.split('/')[0]}</span>
         </div>
-        <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-stone-400 transition-transform ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       {/* Menú flotante con la Grilla de Íconos */}
       {isOpen && (
         <>
-          {/* Fondo para cerrar al hacer clic afuera */}
+          {/* Fondo transparente para cerrar al hacer clic afuera */}
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
           <div className="absolute left-0 mt-2 z-50 w-72 p-3 bg-white border border-stone-200 rounded-2xl shadow-xl space-y-2 animate-in fade-in">
@@ -44,7 +48,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({ value, onChange }) => {
               Seleccionar ícono
             </p>
 
-            {/* Cuadrícula de Íconos (Grid) */}
+            {/* Cuadrícula de Íconos */}
             <div className="grid grid-cols-5 gap-1.5 max-h-56 overflow-y-auto pr-1">
               {CATEGORY_ICONS.map((item) => {
                 const IconComponent = item.icon;
@@ -66,9 +70,9 @@ export const IconPicker: React.FC<IconPickerProps> = ({ value, onChange }) => {
                     }`}
                   >
                     {IconComponent ? (
-                      <IconComponent className="w-5 h-5" />
+                      <IconComponent className="w-5 h-5 shrink-0" />
                     ) : (
-                      <Ban className="w-5 h-5 text-stone-400" />
+                      <Ban className="w-5 h-5 text-stone-400 shrink-0" />
                     )}
                   </button>
                 );

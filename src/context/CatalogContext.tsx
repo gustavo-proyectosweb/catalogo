@@ -30,6 +30,7 @@ interface CatalogContextType {
   viewMode: 'public' | 'admin';
   setViewMode: (mode: 'public' | 'admin') => void;
   isAdminAuthenticated: boolean;
+  isAuthLoading: boolean;
   loginAdmin: (email: string, pass: string) => Promise<boolean>;
   logoutAdmin: () => Promise<void>;
   isCartOpen: boolean;
@@ -81,6 +82,8 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const showToast = (msg: string) => setToastMessage(msg);
   const hideToast = () => setToastMessage(null);
 
+
+
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_cart`);
@@ -106,6 +109,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const [viewMode, setViewMode] = useState<'public' | 'admin'>('public');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProductForDetail, setSelectedProductForDetailState] = useState<Product | null>(null);
@@ -205,13 +209,16 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAdminAuthenticated(!!user);
+      setIsAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   const loginAdmin = async (email: string, pass: string): Promise<boolean> => {
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanPass = pass.trim();
+      await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
       return true;
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
@@ -228,35 +235,50 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  // Product Actions
+  // Product Actions (Protección con guard)
   const addProduct = async (productData: Omit<Product, 'id'>): Promise<Product> => {
+  try {
+    // Si querés que te avise en consola si falla la autenticación:
+    if (!isAdminAuthenticated) {
+      console.warn('Advertencia: Intentando agregar producto sin sesión de admin detectada.');
+    }
+    
     const docRef = await addDoc(collection(db, 'products'), productData);
+    showToast(`¡Producto "${productData.name}" creado con éxito!`);
     return { ...productData, id: docRef.id };
-  };
+  } catch (error) {
+    console.error('Error al guardar en Firebase:', error);
+    showToast('Error al guardar el producto en la base de datos');
+    throw error;
+  }
+};
 
   const updateProduct = async (updated: Product) => {
+    if (!isAdminAuthenticated) throw new Error('No autorizado');
     const { id, ...dataToUpdate } = updated;
     await updateDoc(doc(db, 'products', id), dataToUpdate);
 
-    // Si el producto que se editó es el que está actualmente abierto en el modal, se actualiza
     if (selectedProductForDetail && selectedProductForDetail.id === updated.id) {
       setSelectedProductForDetail(updated);
     }
   };
 
   const deleteProduct = async (id: string) => {
+    if (!isAdminAuthenticated) throw new Error('No autorizado');
     await deleteDoc(doc(db, 'products', id));
     setCart((prev) => prev.filter((item) => item.product.id !== id));
   };
 
   const toggleProductAvailability = async (id: string) => {
+    if (!isAdminAuthenticated) throw new Error('No autorizado');
     const product = products.find((p) => p.id === id);
     if (!product) return;
     await updateDoc(doc(db, 'products', id), { available: !product.available });
   };
 
-  // Category Actions
+  // Category Actions (Protección con guard)
   const addCategory = async (categoryData: Omit<Category, 'id'>) => {
+    if (!isAdminAuthenticated) throw new Error('No autorizado');
     const nextOrder = categories.length > 0
       ? Math.max(...categories.map((c) => c.order ?? 0)) + 1
       : 0;
@@ -268,16 +290,19 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateCategory = async (updated: Category) => {
+    if (!isAdminAuthenticated) throw new Error('No autorizado');
     const { id, ...dataToUpdate } = updated;
     await updateDoc(doc(db, 'categories', id), dataToUpdate);
   };
 
   const deleteCategory = async (id: string) => {
+    if (!isAdminAuthenticated) throw new Error('No autorizado');
     await deleteDoc(doc(db, 'categories', id));
   };
 
-  // Business Actions
+  // Business Actions (Protección con guard)
   const updateBusiness = async (updated: BusinessInfo) => {
+    if (!isAdminAuthenticated) throw new Error('No autorizado');
     await setDoc(doc(db, 'business', 'main'), updated, { merge: true });
   };
 
@@ -419,6 +444,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         viewMode,
         setViewMode,
         isAdminAuthenticated,
+        isAuthLoading,
         loginAdmin,
         logoutAdmin,
         isCartOpen,

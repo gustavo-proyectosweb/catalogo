@@ -11,7 +11,10 @@ export const AdminLogin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
       setError('Por favor completá usuario y contraseña');
       return;
     }
@@ -19,11 +22,11 @@ export const AdminLogin: React.FC = () => {
     setLoading(true);
     setError('');
 
-    const success = await loginAdmin(email, password);
+    const success = await loginAdmin(cleanEmail, cleanPassword);
     setLoading(false);
 
     if (!success) {
-      setError('Credenciales incorrectas o usuario no registrado en Firebase');
+      setError('Credenciales incorrectas o usuario no registrado');
     }
   };
 
