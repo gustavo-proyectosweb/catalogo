@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCatalog } from '../../context/CatalogContext';
-import { Plus, ArrowRight, CheckCircle2, EyeOff } from 'lucide-react';
+import { Plus, ArrowRight, CheckCircle2, EyeOff, Store, Power } from 'lucide-react';
 
 interface AdminHomeProps {
   onGoToProducts: () => void;
@@ -13,10 +13,17 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
   onOpenNewProduct,
   onGoToCategories,
 }) => {
-  const { business, products, categories } = useCatalog();
+  const { business, products, categories, updateBusiness } = useCatalog();
 
-  // Flag preparado para el switch Abierto / Cerrado
-  const isStoreOpen = true;
+  // Estado del local dinámico desde el contexto
+  const isStoreOpen = business.isOpen ?? true;
+
+  const handleToggleStoreStatus = async () => {
+    await updateBusiness({
+      ...business,
+      isOpen: !isStoreOpen,
+    });
+  };
 
   // Métricas de Productos
   const activeProductsCount = products.filter((p) => p.available).length;
@@ -32,7 +39,7 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
       <div className="bg-gradient-to-r from-stone-900 to-stone-950 text-white rounded-3xl p-6 sm:p-8 border border-stone-800 shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-4">
           
-          {/* Badge de Estado del Catálogo */}
+          {/* Badge de Estado del Catálogo (Dinámico) */}
           <div
             className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-colors ${
               isStoreOpen
@@ -75,6 +82,45 @@ export const AdminHome: React.FC<AdminHomeProps> = ({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Control Rápido de Estado del Local (Abierto / Cerrado) */}
+      <div className="bg-white border border-stone-200/90 rounded-3xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+              isStoreOpen ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+            }`}
+          >
+            <Store className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-stone-900">
+              Estado del Local:{' '}
+              <span className={isStoreOpen ? 'text-emerald-600' : 'text-rose-600'}>
+                {isStoreOpen ? 'ABIERTO' : 'CERRADO'}
+              </span>
+            </h3>
+            <p className="text-xs text-stone-500">
+              {isStoreOpen
+                ? 'El catálogo permite a los clientes enviar pedidos por WhatsApp.'
+                : 'El catálogo estará bloqueado para nuevos pedidos.'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleToggleStoreStatus}
+          className={`w-full sm:w-auto px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer ${
+            isStoreOpen
+              ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+              : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-md'
+          }`}
+        >
+          <Power className="w-4 h-4" />
+          <span>{isStoreOpen ? 'CERRAR NEGOCIO' : 'ABRIR NEGOCIO'}</span>
+        </button>
       </div>
 
       {/* Tarjetas de Resumen de Productos y Categorías */}
