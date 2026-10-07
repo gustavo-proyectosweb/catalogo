@@ -38,6 +38,7 @@ export interface BusinessInfo {
   bannerUrl: string;
   currencySymbol: string;
   primaryColor: string;
+  isOpen: boolean;
 }
 
 export interface CartItem {

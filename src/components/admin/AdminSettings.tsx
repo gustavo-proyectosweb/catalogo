@@ -1,18 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCatalog } from '../../context/CatalogContext';
 import { BusinessInfo } from '../../types';
-import { Check, RotateCcw, Phone, MapPin, Instagram, Upload, Loader2 } from 'lucide-react';
+import {
+  Check,
+  Phone,
+  MapPin,
+  Instagram,
+  Upload,
+  Loader2,
+  Image as ImageIcon,
+  Store,
+  Power,
+} from 'lucide-react';
 import { uploadImageToCloudinary } from '../../services/cloudinary';
 
 export const AdminSettings: React.FC = () => {
-  const { business, updateBusiness, resetToDemoDefaults } = useCatalog();
+  const { business, updateBusiness } = useCatalog();
 
-  const [formData, setFormData] = useState<BusinessInfo>(business);
+  const [formData, setFormData] = useState<BusinessInfo>({
+    ...business,
+    isOpen: business.isOpen ?? true,
+  });
   const [savedNotification, setSavedNotification] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Estados de carga independientes para Logo y Banner
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+
+  useEffect(() => {
+    setFormData({
+      ...business,
+      isOpen: business.isOpen ?? true,
+    });
+  }, [business]);
+
+  const handleToggleStoreStatus = async () => {
+    const updated = { ...formData, isOpen: !formData.isOpen };
+    setFormData(updated);
+    await updateBusiness(updated);
+  };
+
+  const handleWhatsappChange = (value: string) => {
+    const cleanNumbers = value.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, whatsapp: cleanNumbers }));
+    if (errors.whatsapp) setErrors((prev) => ({ ...prev, whatsapp: '' }));
+  };
+
+  const handleInstagramChange = (value: string) => {
+    let cleanUser = value.trim();
+    if (cleanUser.startsWith('@')) {
+      cleanUser = cleanUser.slice(1);
+    }
+    setFormData((prev) => ({ ...prev, instagram: cleanUser }));
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -23,7 +63,10 @@ export const AdminSettings: React.FC = () => {
       const url = await uploadImageToCloudinary(file);
       setFormData((prev) => ({ ...prev, logoUrl: url }));
     } catch (error) {
-      alert('Error al subir el logo. Por favor intenta de nuevo.');
+      setErrors((prev) => ({
+        ...prev,
+        logo: 'Error al subir la imagen. Verifica la conexión o formato.',
+      }));
     } finally {
       setUploadingLogo(false);
     }
@@ -38,29 +81,44 @@ export const AdminSettings: React.FC = () => {
       const url = await uploadImageToCloudinary(file);
       setFormData((prev) => ({ ...prev, bannerUrl: url }));
     } catch (error) {
-      alert('Error al subir la imagen de portada. Por favor intenta de nuevo.');
+      setErrors((prev) => ({
+        ...prev,
+        banner: 'Error al subir el banner. Intenta de nuevo.',
+      }));
     } finally {
       setUploadingBanner(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateBusiness(formData);
-    setSavedNotification(true);
-    setTimeout(() => setSavedNotification(false), 2500);
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre del comercio es obligatorio.';
+    }
+
+    if (!formData.tagline.trim()) {
+      newErrors.tagline = 'El subtítulo/rubro es obligatorio.';
+    }
+
+    if (!formData.whatsapp.trim()) {
+      newErrors.whatsapp = 'El número de WhatsApp es obligatorio.';
+    } else if (formData.whatsapp.length < 10) {
+      newErrors.whatsapp = 'Ingresá un número válido con código de área (mínimo 10 dígitos).';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleReset = () => {
-    if (
-      window.confirm(
-        '¿Restablecer todo a los datos iniciales de demo (Barrio Burger)? Se reiniciarán productos, categorías y precios.'
-      )
-    ) {
-      resetToDemoDefaults();
-      setFormData(business);
-      alert('Datos de demo restablecidos con éxito.');
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    await updateBusiness(formData);
+    setSavedNotification(true);
+    setTimeout(() => setSavedNotification(false), 3000);
   };
 
   return (
@@ -70,8 +128,47 @@ export const AdminSettings: React.FC = () => {
           Configuración del Negocio
         </h2>
         <p className="text-xs text-stone-500">
-          Información visible para los clientes y número de WhatsApp receptor de pedidos
+          Información visible para los clientes y estado de recepción de pedidos
         </p>
+      </div>
+
+      {/* Control de Abierto / Cerrado */}
+      <div className="bg-white border border-stone-200/90 rounded-3xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+              formData.isOpen ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+            }`}
+          >
+            <Store className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-stone-900">
+              Estado del Local:{' '}
+              <span className={formData.isOpen ? 'text-emerald-600' : 'text-rose-600'}>
+                {formData.isOpen ? 'ABIERTO' : 'CERRADO'}
+              </span>
+            </h3>
+            <p className="text-xs text-stone-500">
+              {formData.isOpen
+                ? 'El catálogo permite a los clientes enviar pedidos por WhatsApp.'
+                : 'El catálogo estará bloqueado para nuevos pedidos.'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleToggleStoreStatus}
+          className={`w-full sm:w-auto px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer ${
+            formData.isOpen
+              ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+              : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-md'
+          }`}
+        >
+          <Power className="w-4 h-4" />
+          <span>{formData.isOpen ? 'CERRAR NEGOCIO' : 'ABRIR NEGOCIO'}</span>
+        </button>
       </div>
 
       {savedNotification && (
@@ -81,8 +178,10 @@ export const AdminSettings: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-stone-200/90 p-5 sm:p-7 shadow-xs space-y-5">
-        {/* Name and Tagline */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-3xl border border-stone-200/90 p-5 sm:p-7 shadow-xs space-y-5"
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-stone-700 mb-1">
@@ -90,11 +189,23 @@ export const AdminSettings: React.FC = () => {
             </label>
             <input
               type="text"
-              required
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              onChange={(e) => {
+                setFormData({ ...formData, name: e.target.value });
+                if (errors.name) setErrors((prev) => ({ ...prev, name: '' }));
+              }}
+              placeholder="Ej: Mi Comercio u Tienda"
+              className={`w-full px-3.5 py-2.5 bg-stone-50 border rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 ${
+                errors.name
+                  ? 'border-rose-500 focus:ring-rose-200'
+                  : 'border-stone-300 focus:ring-brand-primary'
+              }`}
             />
+            {errors.name && (
+              <span className="text-[11px] text-rose-600 font-semibold mt-1 block">
+                {errors.name}
+              </span>
+            )}
           </div>
 
           <div>
@@ -103,28 +214,39 @@ export const AdminSettings: React.FC = () => {
             </label>
             <input
               type="text"
-              required
               value={formData.tagline}
-              onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              onChange={(e) => {
+                setFormData({ ...formData, tagline: e.target.value });
+                if (errors.tagline) setErrors((prev) => ({ ...prev, tagline: '' }));
+              }}
+              placeholder="Ej: Tienda de ropa, Indumentaria y accesorios"
+              className={`w-full px-3.5 py-2.5 bg-stone-50 border rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 ${
+                errors.tagline
+                  ? 'border-rose-500 focus:ring-rose-200'
+                  : 'border-stone-300 focus:ring-brand-primary'
+              }`}
             />
+            {errors.tagline && (
+              <span className="text-[11px] text-rose-600 font-semibold mt-1 block">
+                {errors.tagline}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Description */}
         <div>
           <label className="block text-xs font-bold text-stone-700 mb-1">
-            Descripción del local
+            Descripción del negocio
           </label>
           <textarea
             rows={2}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Breve presentación o información importante para tus clientes..."
             className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
         </div>
 
-        {/* WhatsApp & Schedule */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-stone-700 mb-1">
@@ -134,16 +256,25 @@ export const AdminSettings: React.FC = () => {
               <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
               <input
                 type="text"
-                required
                 value={formData.whatsapp}
-                onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                placeholder="5491112345678"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary font-mono"
+                onChange={(e) => handleWhatsappChange(e.target.value)}
+                placeholder="Ej: 5491112345678"
+                className={`w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 font-mono ${
+                  errors.whatsapp
+                    ? 'border-rose-500 focus:ring-rose-200'
+                    : 'border-stone-300 focus:ring-brand-primary'
+                }`}
               />
             </div>
-            <span className="text-[11px] text-stone-400 mt-1 block">
-              A este número llegarán todos los pedidos armados.
-            </span>
+            {errors.whatsapp ? (
+              <span className="text-[11px] text-rose-600 font-semibold mt-1 block">
+                {errors.whatsapp}
+              </span>
+            ) : (
+              <span className="text-[11px] text-stone-400 mt-1 block">
+                A este número llegarán todos los pedidos armados.
+              </span>
+            )}
           </div>
 
           <div>
@@ -154,13 +285,12 @@ export const AdminSettings: React.FC = () => {
               type="text"
               value={formData.schedule}
               onChange={(e) => setFormData({ ...formData, schedule: e.target.value })}
-              placeholder="Mar a Dom de 19:30 a 00:30 hs"
+              placeholder="Ej: Lun a Vie de 09:00 a 18:00 hs"
               className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
         </div>
 
-        {/* Address & Instagram */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-stone-700 mb-1">
@@ -172,6 +302,7 @@ export const AdminSettings: React.FC = () => {
                 type="text"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder="Ej: Av. Principal 1234, Centro"
                 className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
@@ -185,32 +316,33 @@ export const AdminSettings: React.FC = () => {
               <Instagram className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
               <input
                 type="text"
-                value={formData.instagram}
-                onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                placeholder="@barrioburger.ok"
+                value={formData.instagram ? `@${formData.instagram}` : ''}
+                onChange={(e) => handleInstagramChange(e.target.value)}
+                placeholder="@minegocio.ok"
                 className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
           </div>
         </div>
 
-        {/* Logo and Banner Uploads */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-stone-100">
-          {/* Logo Field */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-stone-700">
-              Logo del negocio
-            </label>
+            <label className="block text-xs font-bold text-stone-700">Logo del negocio</label>
             <div className="p-3 bg-stone-50 border border-stone-200 rounded-2xl flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-stone-200 overflow-hidden shrink-0 border border-stone-300 flex items-center justify-center">
                 {uploadingLogo ? (
                   <Loader2 className="w-5 h-5 text-brand-primary animate-spin" />
-                ) : (
+                ) : formData.logoUrl ? (
                   <img
                     src={formData.logoUrl}
                     alt="Logo"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
+                ) : (
+                  <ImageIcon className="w-5 h-5 text-stone-400" />
                 )}
               </div>
               <div className="flex-1 min-w-0 space-y-1.5">
@@ -236,21 +368,23 @@ export const AdminSettings: React.FC = () => {
             </div>
           </div>
 
-          {/* Banner Field */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-stone-700">
-              Portada / Banner
-            </label>
+            <label className="block text-xs font-bold text-stone-700">Portada / Banner</label>
             <div className="p-3 bg-stone-50 border border-stone-200 rounded-2xl flex items-center gap-3">
               <div className="w-16 h-12 rounded-xl bg-stone-200 overflow-hidden shrink-0 border border-stone-300 flex items-center justify-center">
                 {uploadingBanner ? (
                   <Loader2 className="w-5 h-5 text-brand-primary animate-spin" />
-                ) : (
+                ) : formData.bannerUrl ? (
                   <img
                     src={formData.bannerUrl}
                     alt="Banner"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
+                ) : (
+                  <ImageIcon className="w-5 h-5 text-stone-400" />
                 )}
               </div>
               <div className="flex-1 min-w-0 space-y-1.5">
@@ -277,20 +411,10 @@ export const AdminSettings: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-stone-600 hover:text-red-700 text-xs font-semibold hover:bg-stone-100 rounded-xl transition cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Restablecer datos demo</span>
-          </button>
-
+        <div className="pt-4 border-t border-stone-100 flex justify-end">
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-black text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center gap-2"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary text-stone-950 font-black text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-2"
           >
             <Check className="w-4 h-4 stroke-[3]" />
             <span>GUARDAR CONFIGURACIÓN</span>

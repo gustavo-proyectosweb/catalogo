@@ -51,7 +51,6 @@ interface CatalogContextType {
   deleteCategory: (id: string) => Promise<void>;
   // Business actions
   updateBusiness: (business: BusinessInfo) => Promise<void>;
-  resetToDemoDefaults: () => Promise<void>;
   // Cart actions
   addToCart: (
     product: Product,
@@ -73,7 +72,10 @@ const STORAGE_KEY = 'barrio_burger_catalog_v2';
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [business, setBusiness] = useState<BusinessInfo>(INITIAL_BUSINESS);
+  const [business, setBusiness] = useState<BusinessInfo>({
+    ...INITIAL_BUSINESS,
+    isOpen: INITIAL_BUSINESS.isOpen ?? true,
+  });
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -81,8 +83,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const showToast = (msg: string) => setToastMessage(msg);
   const hideToast = () => setToastMessage(null);
-
-
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -115,15 +115,8 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [selectedProductForDetail, setSelectedProductForDetailState] = useState<Product | null>(null);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
 
-
   const setSelectedProductForDetail = (product: Product | null) => {
     setEditingCartItem(null);
-    setSelectedProductForDetailState(product);
-  };
-
-  // Función para abrir un producto nuevo desde el menú principal
-  const openProductDetail = (product: Product) => {
-    setEditingCartItem(null); // <-- Limpia cualquier edición previa para que la apertura empiece de cero
     setSelectedProductForDetailState(product);
   };
 
@@ -133,7 +126,11 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       doc(db, 'business', 'main'),
       (docSnap) => {
         if (docSnap.exists()) {
-          setBusiness(docSnap.data() as BusinessInfo);
+          const data = docSnap.data() as BusinessInfo;
+          setBusiness({
+            ...data,
+            isOpen: data.isOpen ?? true, // Fallback si no existe en Firestore todavía
+          });
         }
       },
       (error) => console.error("Error al escuchar negocio:", error)
@@ -235,23 +232,22 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  // Product Actions (Protección con guard)
+  // Product Actions
   const addProduct = async (productData: Omit<Product, 'id'>): Promise<Product> => {
-  try {
-    // Si querés que te avise en consola si falla la autenticación:
-    if (!isAdminAuthenticated) {
-      console.warn('Advertencia: Intentando agregar producto sin sesión de admin detectada.');
+    try {
+      if (!isAdminAuthenticated) {
+        console.warn('Advertencia: Intentando agregar producto sin sesión de admin detectada.');
+      }
+      
+      const docRef = await addDoc(collection(db, 'products'), productData);
+      showToast(`¡Producto "${productData.name}" creado con éxito!`);
+      return { ...productData, id: docRef.id };
+    } catch (error) {
+      console.error('Error al guardar en Firebase:', error);
+      showToast('Error al guardar el producto en la base de datos');
+      throw error;
     }
-    
-    const docRef = await addDoc(collection(db, 'products'), productData);
-    showToast(`¡Producto "${productData.name}" creado con éxito!`);
-    return { ...productData, id: docRef.id };
-  } catch (error) {
-    console.error('Error al guardar en Firebase:', error);
-    showToast('Error al guardar el producto en la base de datos');
-    throw error;
-  }
-};
+  };
 
   const updateProduct = async (updated: Product) => {
     if (!isAdminAuthenticated) throw new Error('No autorizado');
@@ -276,7 +272,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     await updateDoc(doc(db, 'products', id), { available: !product.available });
   };
 
-  // Category Actions (Protección con guard)
+  // Category Actions
   const addCategory = async (categoryData: Omit<Category, 'id'>) => {
     if (!isAdminAuthenticated) throw new Error('No autorizado');
     const nextOrder = categories.length > 0
@@ -300,26 +296,18 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     await deleteDoc(doc(db, 'categories', id));
   };
 
-  // Business Actions (Protección con guard)
+  // Business Actions
   const updateBusiness = async (updated: BusinessInfo) => {
     if (!isAdminAuthenticated) throw new Error('No autorizado');
     await setDoc(doc(db, 'business', 'main'), updated, { merge: true });
   };
 
-  const resetToDemoDefaults = async () => {
-    await setDoc(doc(db, 'business', 'main'), INITIAL_BUSINESS);
-    setCart([]);
-    localStorage.removeItem(`${STORAGE_KEY}_cart`);
-  };
-
-  // Abrir modal para editar un ítem existente del carrito
   const openEditCartItem = (item: CartItem) => {
     setEditingCartItem(item);
     setSelectedProductForDetailState(item.product);
     setIsCartOpen(false);
   };
 
-  // Cart actions: Soporta agregar nuevo o reemplazar si se especificó un ID
   const addToCart = (
     product: Product,
     quantity: number,
@@ -332,7 +320,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const cleanNotes = notes ? notes.trim() : '';
 
     setCart((prevCart) => {
-      // 1. Si venimos de EDITAR, actualizamos ESE elemento exacto
       if (replaceCartItemId) {
         return prevCart.map((item) => {
           if (item.cartItemId === replaceCartItemId) {
@@ -349,7 +336,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         });
       }
 
-      // 2. Si es un producto NUEVO, verificamos si ya existe uno IDÉNTICO
       const sortedNewExtras = [...selectedExtras].map((e) => e.id).sort().join(',');
 
       const existingIndex = prevCart.findIndex((item) => {
@@ -361,7 +347,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
 
       if (existingIndex > -1) {
-        // Sumamos la cantidad al ítem existente
         return prevCart.map((item, idx) => {
           if (idx === existingIndex) {
             const newQty = item.quantity + quantity;
@@ -375,7 +360,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         });
       }
 
-      // 3. Si no existe uno idéntico, creamos uno nuevo
       const uniqueCartItemId = typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : `${product.id}_${Date.now()}`;
@@ -462,7 +446,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateCategory,
         deleteCategory,
         updateBusiness,
-        resetToDemoDefaults,
         addToCart,
         updateCartQuantity,
         removeFromCart,

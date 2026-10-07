@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useCatalog } from '../../context/CatalogContext';
-import { CartItem } from '../../types'; // <-- Soluciona el error de TypeScript
-import { ConfirmModal } from '../common/ConfirmModal'; // <-- Importamos el modal de confirmación
+import { CartItem } from '../../types';
+import { ConfirmModal } from '../common/ConfirmModal';
 import { formatPrice, sanitizeWhatsappNumber } from '../../utils/formatters';
-import { X, Trash2, Plus, Minus, Send, MapPin, User, AlertCircle, ShoppingBag, Pencil } from 'lucide-react';
+import { X, Trash2, Plus, Minus, Send, MapPin, User, AlertCircle, ShoppingBag, Pencil, Lock } from 'lucide-react';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -18,6 +18,8 @@ export const CartDrawer: React.FC = () => {
     business,
   } = useCatalog();
 
+  const isOpen = business.isOpen ?? true;
+
   const [customerName, setCustomerName] = useState('');
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'takeaway'>('delivery');
   const [addressOrNote, setAddressOrNote] = useState('');
@@ -25,7 +27,6 @@ export const CartDrawer: React.FC = () => {
   const [errors, setErrors] = useState<{ name?: string; address?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Estados para diálogos de confirmación
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
@@ -55,7 +56,7 @@ export const CartDrawer: React.FC = () => {
 
   const sanitizeInput = (str: string): string => {
     if (!str) return '';
-    return str.replace(/[<>/]/g, '').trim(); // Solo elimina caracteres HTML peligrosos sin romper emojis
+    return str.replace(/[<>/]/g, '').trim();
   };
 
   const validateForm = (): boolean => {
@@ -86,51 +87,50 @@ export const CartDrawer: React.FC = () => {
   const calculatedCartTotal = cart.reduce((acc, item) => acc + item.subtotal, 0);
 
   const buildWhatsappMessage = (): string => {
-  const safeName = sanitizeInput(customerName);
-  const safeAddress = sanitizeInput(addressOrNote);
+    const safeName = sanitizeInput(customerName);
+    const safeAddress = sanitizeInput(addressOrNote);
 
-  let msg = `*PEDIDO - ${business.name.toUpperCase()}*\n\n`;
+    let msg = `*PEDIDO - ${business.name.toUpperCase()}*\n\n`;
 
-  // Datos del Cliente y Entrega
-  if (safeName) {
-    msg += `*Cliente:* ${safeName}\n`;
-  }
-  msg += `*Entrega:* ${deliveryType === 'delivery' ? 'Envío a domicilio' : 'Retiro en local'}\n`;
+    if (safeName) {
+      msg += `*Cliente:* ${safeName}\n`;
+    }
+    msg += `*Entrega:* ${deliveryType === 'delivery' ? 'Envío a domicilio' : 'Retiro en local'}\n`;
 
-  if (safeAddress) {
-    msg += `*${deliveryType === 'delivery' ? 'Dirección' : 'Nota'}:* ${safeAddress}\n`;
-  }
-
-  msg += `\n----------------------------------\n`;
-  msg += `*DETALLE DEL PEDIDO*\n`;
-  msg += `----------------------------------\n\n`;
-
-  // Productos compactos
-  cart.forEach((item) => {
-    msg += `*${item.quantity}x ${item.product.name}* - ${formatPrice(item.subtotal)}\n`;
-
-    if (item.selectedExtras && item.selectedExtras.length > 0) {
-      item.selectedExtras.forEach((extra) => {
-        msg += `  + ${extra.name} (${formatPrice(extra.price)})\n`;
-      });
+    if (safeAddress) {
+      msg += `*${deliveryType === 'delivery' ? 'Dirección' : 'Nota'}:* ${safeAddress}\n`;
     }
 
-    if (item.notes) {
-      msg += `  _Aclaración: ${sanitizeInput(item.notes)}_\n`;
-    }
-    msg += `\n`;
-  });
+    msg += `\n----------------------------------\n`;
+    msg += `*DETALLE DEL PEDIDO*\n`;
+    msg += `----------------------------------\n\n`;
 
-  msg += `----------------------------------\n`;
-  msg += `*TOTAL: ${formatPrice(calculatedCartTotal)}*\n`;
-  msg += `----------------------------------\n\n`;
+    cart.forEach((item) => {
+      msg += `*${item.quantity}x ${item.product.name}* - ${formatPrice(item.subtotal)}\n`;
 
-  msg += `¿Me confirman la demora estimada? ¡Gracias!`;
+      if (item.selectedExtras && item.selectedExtras.length > 0) {
+        item.selectedExtras.forEach((extra) => {
+          msg += `  + ${extra.name} (${formatPrice(extra.price)})\n`;
+        });
+      }
 
-  return msg;
-};
+      if (item.notes) {
+        msg += `  _Aclaración: ${sanitizeInput(item.notes)}_\n`;
+      }
+      msg += `\n`;
+    });
+
+    msg += `----------------------------------\n`;
+    msg += `*TOTAL: ${formatPrice(calculatedCartTotal)}*\n`;
+    msg += `----------------------------------\n\n`;
+
+    msg += `¿Me confirman la demora estimada? ¡Gracias!`;
+
+    return msg;
+  };
 
   const handleSendToWhatsApp = () => {
+    if (!isOpen) return; // Guard extra
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -151,7 +151,6 @@ export const CartDrawer: React.FC = () => {
       <div className="fixed inset-0 -z-10" onClick={() => setIsCartOpen(false)} />
 
       <div className="bg-white w-full sm:max-w-md h-full flex flex-col shadow-2xl border-l border-stone-200 animate-in slide-in-from-right duration-300">
-
         {/* Header */}
         <div className="p-4 sm:p-5 bg-stone-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -196,7 +195,7 @@ export const CartDrawer: React.FC = () => {
               </div>
               <p className="font-bold text-stone-800 text-base mb-1">Tu pedido está vacío</p>
               <p className="text-xs text-stone-500 max-w-xs mb-4">
-                Elegí tus productos favoritos del menú para comenzar tu pedido.
+                Elegí tus productos favoritos del catálogo para comenzar tu pedido.
               </p>
               <button
                 onClick={() => setIsCartOpen(false)}
@@ -207,6 +206,17 @@ export const CartDrawer: React.FC = () => {
             </div>
           ) : (
             <>
+              {/* Alerta si el local está cerrado */}
+              {!isOpen && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2.5 text-rose-800 text-xs">
+                  <Lock className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                  <div>
+                    <span className="font-bold block">El negocio está cerrado</span>
+                    <span>En este momento no se están recibiendo nuevos pedidos.</span>
+                  </div>
+                </div>
+              )}
+
               {/* Lista de productos */}
               <div className="space-y-3">
                 {cart.map((item) => {
@@ -227,7 +237,7 @@ export const CartDrawer: React.FC = () => {
                             <span>Base: {formatPrice(item.product.price)}</span>
                             {hasExtras && (
                               <span className="font-semibold text-stone-700">
-                                (Combo: {formatPrice(item.unitTotal)} c/u)
+                                (Unidad: {formatPrice(item.unitTotal)} c/u)
                               </span>
                             )}
                           </div>
@@ -324,16 +334,18 @@ export const CartDrawer: React.FC = () => {
                     <input
                       type="text"
                       maxLength={50}
+                      disabled={!isOpen}
                       value={customerName}
                       onChange={(e) => {
                         setCustomerName(e.target.value);
                         if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
                       }}
                       placeholder="Tu nombre (ej: Carlos)"
-                      className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 ${errors.name
-                        ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                        : 'border-stone-200 focus:ring-brand-primary'
-                        }`}
+                      className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 ${
+                        errors.name
+                          ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
+                          : 'border-stone-200 focus:ring-brand-primary'
+                      } ${!isOpen ? 'bg-stone-100 cursor-not-allowed text-stone-400' : ''}`}
                     />
                   </div>
                   {errors.name && (
@@ -347,21 +359,25 @@ export const CartDrawer: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
+                    disabled={!isOpen}
                     onClick={() => setDeliveryType('delivery')}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${deliveryType === 'delivery'
-                      ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
-                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
-                      }`}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${
+                      deliveryType === 'delivery'
+                        ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
+                        : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
+                    } ${!isOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     🛵 Envío a domicilio
                   </button>
                   <button
                     type="button"
+                    disabled={!isOpen}
                     onClick={() => setDeliveryType('takeaway')}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${deliveryType === 'takeaway'
-                      ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
-                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
-                      }`}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${
+                      deliveryType === 'takeaway'
+                        ? 'bg-brand-primary border-brand-primary text-stone-950 shadow-2xs'
+                        : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-100'
+                    } ${!isOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     🛍️ Retiro en local
                   </button>
@@ -373,6 +389,7 @@ export const CartDrawer: React.FC = () => {
                     <textarea
                       rows={2}
                       maxLength={120}
+                      disabled={!isOpen}
                       value={addressOrNote}
                       onChange={(e) => {
                         setAddressOrNote(e.target.value);
@@ -383,10 +400,11 @@ export const CartDrawer: React.FC = () => {
                           ? 'Dirección de entrega (calle, número, piso/depto)'
                           : 'Aclaración para el retiro (opcional, ej: paso 21:30)'
                       }
-                      className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 resize-none ${errors.address
-                        ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                        : 'border-stone-200 focus:ring-brand-primary'
-                        }`}
+                      className={`w-full pl-9 pr-3 py-2 bg-white rounded-xl border text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-1 resize-none ${
+                        errors.address
+                          ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
+                          : 'border-stone-200 focus:ring-brand-primary'
+                      } ${!isOpen ? 'bg-stone-100 cursor-not-allowed text-stone-400' : ''}`}
                     />
                   </div>
                   {errors.address && (
@@ -417,18 +435,31 @@ export const CartDrawer: React.FC = () => {
             </div>
 
             <button
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isOpen}
               onClick={handleSendToWhatsApp}
-              className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] disabled:opacity-50 text-white font-extrabold text-base shadow-xl shadow-emerald-600/25 transition cursor-pointer"
+              className={`w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl font-extrabold text-base shadow-xl transition ${
+                isOpen
+                  ? 'bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white shadow-emerald-600/25 cursor-pointer'
+                  : 'bg-stone-300 text-stone-500 cursor-not-allowed shadow-none'
+              }`}
             >
-              <Send className="w-5 h-5 fill-white" />
-              <span>PEDIR POR WHATSAPP</span>
+              {isOpen ? (
+                <>
+                  <Send className="w-5 h-5 fill-white" />
+                  <span>PEDIR POR WHATSAPP</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-5 h-5" />
+                  <span>NEGOCIO CERRADO</span>
+                </>
+              )}
             </button>
           </div>
         )}
       </div>
 
-      {/* Modales de Confirmación UI */}
+      {/* Modales de Confirmación */}
       <ConfirmModal
         isOpen={showClearConfirm}
         title="¿Vaciar el pedido?"
