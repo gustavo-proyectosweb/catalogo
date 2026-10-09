@@ -68,7 +68,7 @@ export const CartDrawer: React.FC = () => {
       newErrors.name = 'Por favor ingresá tu nombre.';
     } else if (cleanName.length < 3) {
       newErrors.name = 'El nombre debe tener al menos 3 caracteres.';
-    } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(cleanName)) {
+    } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+\$/.test(cleanName)) {
       newErrors.name = 'Ingresá un nombre válido (solo letras).';
     }
 
@@ -130,7 +130,7 @@ export const CartDrawer: React.FC = () => {
   };
 
   const handleSendToWhatsApp = () => {
-    if (!isOpen) return; // Guard extra
+    if (!isOpen) return;
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -227,9 +227,23 @@ export const CartDrawer: React.FC = () => {
                       key={item.cartItemId}
                       className="p-3.5 rounded-2xl border border-stone-200/80 bg-stone-50/50 flex flex-col gap-2.5"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-stone-900 text-sm leading-snug">
+                      <div className="flex items-start gap-3">
+                        {/* Imagen del Producto en el Carrito */}
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-200 shrink-0 border border-stone-200/60 flex items-center justify-center">
+                          {item.product.imageUrl ? (
+                            <img
+                              src={item.product.imageUrl}
+                              alt={item.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <ShoppingBag className="w-6 h-6 text-stone-400" />
+                          )}
+                        </div>
+
+                        {/* Detalles e Info del Producto */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-stone-900 text-sm leading-snug truncate">
                             {item.product.name}
                           </h4>
 
@@ -264,6 +278,7 @@ export const CartDrawer: React.FC = () => {
                           )}
                         </div>
 
+                        {/* Subtotal del Item */}
                         <div className="text-right shrink-0">
                           <span className="font-black text-stone-900 text-sm block">
                             {formatPrice(item.subtotal)}
@@ -325,7 +340,7 @@ export const CartDrawer: React.FC = () => {
               {/* Formulario de Datos */}
               <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200 space-y-3 mt-4">
                 <span className="text-xs font-black uppercase tracking-wider text-stone-600 block">
-                  Datos para el comercio
+                  Datos para el pedido
                 </span>
 
                 <div>
@@ -466,7 +481,10 @@ export const CartDrawer: React.FC = () => {
         description="Se removerán todos los productos agregados a tu carrito."
         confirmText="Sí, vaciar"
         cancelText="Volver"
-        onConfirm={clearCart}
+        onConfirm={() => {
+          clearCart();
+          setShowClearConfirm(false);
+        }}
         onCancel={() => setShowClearConfirm(false)}
       />
 
@@ -479,6 +497,7 @@ export const CartDrawer: React.FC = () => {
         onConfirm={() => {
           if (itemToDelete) {
             removeFromCart(itemToDelete.cartItemId);
+            setItemToDelete(null);
           }
         }}
         onCancel={() => setItemToDelete(null)}
